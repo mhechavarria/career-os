@@ -4,18 +4,18 @@ new_application.py — bootstrap a new job application file
 
 Usage:
     python3 scripts/new_application.py \
-      --company "Acme" \
+      --company "Nango" \
       --role "Staff Backend Engineer" \
-      --cv cv/versions/acme-staff-backend.md \
+      --cv cv/versions/nango-staff-backend.md \
       --level Staff \
       --source LinkedIn \
-      [--jd jds/acme-staff-backend.txt] \
+      [--jd jds/nango-staff-backend.txt] \
       [--url "https://..."] \
       [--remote] \
       [--no-pdf]
 
 A company-named PDF is generated automatically alongside the application file,
-e.g. cv/versions/your-name-acme.pdf. Pass --no-pdf to skip.
+e.g. cv/versions/mariano-echavarria-nango.pdf. Pass --no-pdf to skip.
 """
 
 import argparse
@@ -237,8 +237,8 @@ tags: []
     if jd_file_ref == "null":
         print(f"\n  Add JD to jds/{slug}.txt then run:")
         print(f"    python3 scripts/jd_gap.py jds/{slug}.txt {args.cv}")
-    print("\n  Update 'stage' in frontmatter as the application progresses.")
-    print("  Run python3 scripts/pipeline_report.py for aggregate insights.\n")
+    print(f"\n  Update 'stage' in frontmatter as the application progresses.")
+    print(f"  Run python3 scripts/pipeline_report.py for aggregate insights.\n")
 
 
 if __name__ == "__main__":
