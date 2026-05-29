@@ -1,0 +1,162 @@
+/* ============================================================
+   Career OS — ATS-safe CV stylesheet
+   Rules: single column only, no floats/grid/flex, no headers/footers
+   ============================================================ */
+
+@page {
+    margin: 0.3in 0.5in;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    font-size: 10pt;
+    line-height: 1.3;
+    color: #1a1a1a;
+    margin: 0;
+    padding: 0;
+}
+
+/* ---- Name ------------------------------------------------- */
+h1 {
+    font-size: 20pt;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 2pt 0;
+    padding: 0;
+    line-height: 1.1;
+}
+
+/* ---- Contact block (p immediately after h1) --------------- */
+h1 + p {
+    font-size: 9pt;
+    color: #555555;
+    margin: 0 0 0 0;
+    line-height: 1.6;
+}
+
+/* ---- Headline (h2#headline hidden; its p styled as subtitle)
+   FRAGILE: this selector depends on markdown2 generating id="headline"
+   from the "## Headline" section heading via the header-ids extra.
+   If the heading text changes, update this selector to match the new id. */
+h2#headline {
+    display: none;
+    margin: 0;
+    padding: 0;
+}
+
+h2#headline + p {
+    font-size: 9.5pt;
+    font-weight: 600;
+    color: #333333;
+    margin: 4pt 0 8pt 0;
+    padding-bottom: 5pt;
+    border-bottom: 1.5pt solid #1a1a1a;
+    line-height: 1.3;
+}
+
+/* ---- Section headers (Experience, Skills, Education...) --- */
+h2 {
+    font-size: 8.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    border-bottom: 0.75pt solid #1a1a1a;
+    margin: 10pt 0 4pt 0;
+    padding-bottom: 2pt;
+    page-break-after: avoid;
+}
+
+/* ---- Role / company title --------------------------------- */
+h3 {
+    font-size: 10pt;
+    font-weight: 700;
+    margin: 7pt 0 1pt 0;
+    padding: 0;
+    page-break-after: avoid;
+}
+
+/* ---- Date + stack line (p immediately after h3) ----------- */
+h3 + p {
+    font-size: 9pt;
+    color: #555555;
+    margin: 0 0 3pt 0;
+    line-height: 1.4;
+    page-break-after: avoid;
+}
+
+/* ---- Sub-role / client heading (grouped company) ---------- */
+h4 {
+    font-size: 9.5pt;
+    font-weight: 700;
+    margin: 6pt 0 1pt 0;
+    padding: 0;
+    page-break-after: avoid;
+}
+
+/* ---- Stack line after sub-role heading -------------------- */
+h4 + p {
+    font-size: 9pt;
+    color: #555555;
+    margin: 0 0 3pt 0;
+    line-height: 1.4;
+    page-break-after: avoid;
+}
+
+/* ---- Body paragraphs -------------------------------------- */
+p {
+    margin: 3pt 0;
+}
+
+/* ---- Role separator (hr between roles) -------------------- */
+hr {
+    border: none;
+    border-top: 0.5pt solid #dddddd;
+    margin: 6pt 0 0 0;
+}
+
+/* Suppress hr between contact block and headline h2 */
+h1 + p + hr {
+    display: none;
+}
+
+/* Suppress hr after headline subtitle — its border-bottom already divides */
+h2#headline + p + hr {
+    display: none;
+}
+
+/* ---- Bullet lists ----------------------------------------- */
+ul {
+    margin: 2pt 0 2pt 0;
+    padding-left: 13pt;
+    list-style-type: disc;
+}
+
+li {
+    margin-bottom: 2pt;
+    line-height: 1.36;
+}
+
+/* Nested lists */
+ul ul {
+    margin: 1pt 0;
+    padding-left: 12pt;
+    list-style-type: circle;
+}
+
+/* ---- Links (rendered as plain black text for ATS) --------- */
+a {
+    color: #1a1a1a;
+    text-decoration: none;
+}
+
+strong {
+    font-weight: 700;
+}
+
+em {
+    font-style: italic;
+}

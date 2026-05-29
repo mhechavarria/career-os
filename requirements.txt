@@ -1,0 +1,4 @@
+# Career OS framework dependencies (CV generation + gap analysis + tooling)
+weasyprint>=60.0
+markdown2>=2.4.0
+pyyaml>=6.0
