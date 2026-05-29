@@ -1,0 +1,22 @@
+# Obsidian machine-specific state (not portable)
+.obsidian/workspace.json
+.obsidian/workspace-mobile.json
+.obsidian/cache
+.obsidian/.trash/
+
+# Generated PDF outputs — regenerated on demand from markdown
+*.pdf
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+*.egg-info/
+.ruff_cache/
+.env
+venv/
+.venv/
+
+# Claude Code / local agent state
+.claude/

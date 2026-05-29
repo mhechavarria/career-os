@@ -1,0 +1,5 @@
+# Development + CI dependencies
+-r requirements.txt
+ruff
+pytest
+pymarkdownlnt
