@@ -2,4 +2,3 @@
 -r requirements.txt
 ruff
 pytest
-pymarkdownlnt

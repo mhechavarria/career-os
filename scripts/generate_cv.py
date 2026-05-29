@@ -3,7 +3,7 @@
 generate_cv.py — ATS-compliant PDF generator for Career OS CV files.
 
 Usage:
-    python3 scripts/generate_cv.py cv/versions/acme-staff-backend.md
+    python3 scripts/generate_cv.py cv/versions/nango-staff-backend.md
     python3 scripts/generate_cv.py cv/master.md --output ~/Desktop/cv.pdf
 """
 
@@ -221,7 +221,7 @@ def main() -> None:
     html = to_html(clean)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    print("Rendering PDF...")
+    print(f"Rendering PDF...")
     pages = to_pdf(html, output_path)
     if pages > 2:
         print(
