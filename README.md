@@ -94,13 +94,18 @@ source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+> **Fresh Debian/Ubuntu?** If `python3 -m venv .venv` fails with
+> `ensurepip is not available`, install the venv/pip packages first:
+> `sudo apt-get install -y python3-venv python3-pip`.
+
 PDF rendering uses **WeasyPrint**, which needs a few native libraries — this is the
 single most common setup snag. Install them for your OS:
 
 - **Linux (Debian/Ubuntu):**
 
   ```bash
-  sudo apt-get install -y libpango-1.0-0 libpangocairo-1.0-0 \
+  sudo apt-get install -y python3-venv python3-pip \
+    libpango-1.0-0 libpangocairo-1.0-0 \
     libgdk-pixbuf2.0-0 libffi-dev shared-mime-info
   ```
 

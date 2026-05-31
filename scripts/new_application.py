@@ -127,7 +127,10 @@ def main():
                     coverage = jd_gap.run(str(jd_path_to_use), str(cv_path))
                 except Exception as e:
                     buf.write(f"[Gap analysis error: {e}]\n")
-            gap_section = f"```\n{buf.getvalue().strip()}\n```"
+            # Strip the machine-specific repo path so the committed application
+            # file shows portable, repo-relative JD/CV references.
+            report = buf.getvalue().strip().replace(f"{REPO_ROOT}/", "")
+            gap_section = f"```\n{report}\n```"
         else:
             print(
                 f"Warning: JD file not found at {jd_path_to_use} — skipping gap analysis"

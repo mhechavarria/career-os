@@ -11,7 +11,7 @@ Outputs:
     PRESENT  — keywords confirmed in both
 """
 
-import sys
+import argparse
 import re
 from pathlib import Path
 from collections import Counter
@@ -449,8 +449,15 @@ def run(jd_path: str, cv_path: str) -> int:
     return coverage
 
 
+def main() -> None:
+    parser = argparse.ArgumentParser(
+        description="Keyword-coverage gap analysis between a job description and a CV."
+    )
+    parser.add_argument("jd", help="Path to the JD text file (e.g. jds/role.txt)")
+    parser.add_argument("cv", help="Path to the CV markdown file (e.g. cv/master.md)")
+    args = parser.parse_args()
+    run(args.jd, args.cv)
+
+
 if __name__ == "__main__":
-    if len(sys.argv) != 3:
-        print("Usage: python3 scripts/jd_gap.py <jd.txt> <cv.md>")
-        sys.exit(1)
-    run(sys.argv[1], sys.argv[2])
+    main()
