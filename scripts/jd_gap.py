@@ -420,7 +420,7 @@ def run(jd_path: str, cv_path: str) -> int:
 
     coverage = score(missing, weak, present)
 
-    print(f"\n=== JD Keyword Gap Report ===")
+    print("\n=== JD Keyword Gap Report ===")
     print(f"  JD : {jd_path}")
     print(f"  CV : {cv_path}")
     print(

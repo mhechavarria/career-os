@@ -127,7 +127,7 @@ def main():
     else:
         print("  No JD files linked yet — add jd_file paths to application frontmatter")
 
-    print(f"\n=== OUTCOME SIGNALS ===")
+    print("\n=== OUTCOME SIGNALS ===")
     print(f"  Applications:     {total}")
     print(f"  Phone screen:     {screened:3d}  {pct(screened, total)}")
     print(
@@ -135,7 +135,7 @@ def main():
     )
     print(f"  Offer:            {offers:3d}  {pct(offers, total)}")
 
-    print(f"\n=== CV VERSION PERFORMANCE ===")
+    print("\n=== CV VERSION PERFORMANCE ===")
     for cv, data in sorted(cv_perf.items(), key=lambda x: -x[1]["apps"]):
         label = cv.replace("cv/versions/", "").replace(".md", "")
         n, screens = data["apps"], data["screens"]
@@ -143,7 +143,7 @@ def main():
             f"  {label:<38} {n} app{'s' if n != 1 else ''}  → {screens} screen{'s' if screens != 1 else ''}  {pct(screens, n)}"
         )
 
-    print(f"\n=== CONCRETE SUGGESTIONS ===")
+    print("\n=== CONCRETE SUGGESTIONS ===")
     high = [(t, c) for t, c in missing_counter.most_common() if c >= 5]
     mid = [(t, c) for t, c in missing_counter.most_common() if 3 <= c < 5]
     low = [(t, c) for t, c in missing_counter.most_common() if 1 <= c < 3]
