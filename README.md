@@ -60,6 +60,14 @@ good pace).
 | CV assembly | `cv/master.md` + `cv/versions/<target>.md` |
 | Applications | `applications/<company>-YYYY-MM.md` + `jds/<slug>.txt` |
 
+### 4. Make it yours
+
+The template ships with **genericized sample content** (a placeholder profile,
+`cv/master.md`, and impact files) so the shape of each file is clear. The intake in
+step 3 overwrites these with your real information — you don't need to delete anything
+first. Folders like `applications/`, `cv/versions/`, `experience/`, and `jds/` start
+empty (kept by `.gitkeep`) and fill up as you go.
+
 ## Repository structure
 
 ```text
@@ -78,18 +86,34 @@ career-os/
 
 ## Generate an ATS-compliant PDF
 
-Install dependencies once:
+Set up a virtual environment and install the Python dependencies once:
 
 ```bash
+python3 -m venv .venv
+source .venv/bin/activate        # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-On Linux, WeasyPrint also needs a few system libraries:
+PDF rendering uses **WeasyPrint**, which needs a few native libraries — this is the
+single most common setup snag. Install them for your OS:
 
-```bash
-sudo apt-get install -y libpango-1.0-0 libpangocairo-1.0-0 \
-  libgdk-pixbuf2.0-0 libffi-dev shared-mime-info
-```
+- **Linux (Debian/Ubuntu):**
+
+  ```bash
+  sudo apt-get install -y libpango-1.0-0 libpangocairo-1.0-0 \
+    libgdk-pixbuf2.0-0 libffi-dev shared-mime-info
+  ```
+
+- **macOS (Homebrew):**
+
+  ```bash
+  brew install pango gdk-pixbuf libffi
+  ```
+
+- **Windows:** use **WSL** and follow the Linux steps above — WeasyPrint's native
+  deps are painful on bare Windows. See the
+  [WeasyPrint install docs](https://doc.courtbouillon.org/weasyprint/stable/first_steps.html)
+  if you hit a missing-library error.
 
 Then render any CV file:
 
@@ -101,6 +125,37 @@ python3 scripts/generate_cv.py cv/master.md
 The generator strips Obsidian syntax, warns on ATS violations (tables, images,
 more than 5 bullets per role, bullets without metrics, more than 2 pages), and
 renders selectable-text output with no headers or footers.
+
+## From evidence to CV — a 60-second example
+
+The system turns one logged win into a tailored CV line you can defend in an interview:
+
+**1. Capture** a quantified bullet in `impacts/impact-library-acme.md`:
+
+```text
+- Cut p99 checkout latency 320ms → 90ms with read-through caching and by collapsing
+  N+1 queries. [tags:: backend, performance] [company:: Acme] [category:: performance]
+```
+
+**2. Tailor** — the agent pulls it into `cv/versions/<role>.md`, reworded for the target JD:
+
+```text
+- Reduced checkout latency 72% (320ms → 90ms p99) via read-through caching and query optimization.
+```
+
+**3. Render** an ATS-safe PDF:
+
+```bash
+python3 scripts/generate_cv.py cv/versions/<role>.md
+```
+
+**4. Check** that your CV covers the job description's keywords:
+
+```bash
+python3 scripts/jd_gap.py jds/<role>.txt cv/versions/<role>.md
+```
+
+`jd_gap.py` flags any JD keywords your CV is missing, so you close real gaps before applying.
 
 ## Tooling
 
