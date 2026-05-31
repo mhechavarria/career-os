@@ -237,8 +237,8 @@ tags: []
     if jd_file_ref == "null":
         print(f"\n  Add JD to jds/{slug}.txt then run:")
         print(f"    python3 scripts/jd_gap.py jds/{slug}.txt {args.cv}")
-    print(f"\n  Update 'stage' in frontmatter as the application progresses.")
-    print(f"  Run python3 scripts/pipeline_report.py for aggregate insights.\n")
+    print("\n  Update 'stage' in frontmatter as the application progresses.")
+    print("  Run python3 scripts/pipeline_report.py for aggregate insights.\n")
 
 
 if __name__ == "__main__":

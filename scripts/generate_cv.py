@@ -221,7 +221,7 @@ def main() -> None:
     html = to_html(clean)
     output_path.parent.mkdir(parents=True, exist_ok=True)
 
-    print(f"Rendering PDF...")
+    print("Rendering PDF...")
     pages = to_pdf(html, output_path)
     if pages > 2:
         print(
