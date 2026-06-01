@@ -18,7 +18,7 @@ Read this file fully before starting. Then follow the phases in order. Do not du
 | `profile/principles.md` | Engineering values the user actually holds |
 | `profile/skills.md` | Full skills inventory by category |
 | `experience/<year>-<company>.md` | Deep documentation of each role |
-| `impacts/impact-library-<company>.md` | Curated, quantified CV bullets per company |
+| `impacts/impact-library.md` | Curated, quantified CV bullets (optionally split per company) |
 | `impacts/brag-doc.md` | Ongoing quarterly achievement log (current role) |
 | `cv/master.md` | Full-length, canonical CV (all roles) |
 | `cv/versions/<target>.md` | Tailored CV variant for a specific opportunity |
@@ -230,7 +230,7 @@ Sections:
 ## STAR Story Seeds
 ```
 
-**`impacts/impact-library-<company>.md`** — extract the 2–3 strongest bullets from the role:
+**`impacts/impact-library.md`** — extract the 2–3 strongest bullets from the role and add them under the relevant heading. For many roles you can split into per-company files (`impacts/impact-library-<company>.md`, adding the `company`/`period` frontmatter below) and link them from the file's Company Libraries section:
 
 ```yaml
 ---
@@ -402,7 +402,7 @@ When the full intake is complete, these files should exist:
 - [ ] `experience/<year>-<company>.md` × N roles
 
 **Impacts** (one per role + brag doc)
-- [ ] `impacts/impact-library-<company>.md` × N roles
+- [ ] `impacts/impact-library.md` (optionally split per company: `impacts/impact-library-<company>.md` × N roles)
 - [ ] `impacts/brag-doc.md`
 
 **CV**

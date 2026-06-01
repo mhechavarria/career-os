@@ -55,7 +55,7 @@ good pace).
 | Phase | Files produced |
 | --- | --- |
 | Profile intake | `profile/*.md` |
-| Per-role deep-dive | `experience/<year>-<company>.md` + `impacts/impact-library-<company>.md` |
+| Per-role deep-dive | `experience/<year>-<company>.md` + `impacts/impact-library.md` |
 | Brag doc | `impacts/brag-doc.md` |
 | CV assembly | `cv/master.md` + `cv/versions/<target>.md` |
 | Applications | `applications/<company>-YYYY-MM.md` + `jds/<slug>.txt` |
@@ -135,7 +135,7 @@ renders selectable-text output with no headers or footers.
 
 The system turns one logged win into a tailored CV line you can defend in an interview:
 
-**1. Capture** a quantified bullet in `impacts/impact-library-acme.md`:
+**1. Capture** a quantified bullet in `impacts/impact-library.md`:
 
 ```text
 - Cut p99 checkout latency 320ms → 90ms with read-through caching and by collapsing
