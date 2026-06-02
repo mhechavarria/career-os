@@ -39,6 +39,7 @@ lock-in, no export button to beg for.
 - [Tests](#tests)
 - [Tool compatibility](#tool-compatibility)
 - [Contributing](#contributing)
+- [Acknowledgements](#acknowledgements)
 - [License](#license)
 
 ## What you get
@@ -258,6 +259,14 @@ Issues and PRs are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) and the
 [Semantic Versioning](https://semver.org) and are tracked in
 [CHANGELOG.md](CHANGELOG.md). Security reports go through
 [SECURITY.md](SECURITY.md).
+
+## Acknowledgements
+
+The structure and philosophy of Career OS — impact-first, metrics-driven,
+evidence over adjectives — were inspired by the
+[Tech Interview Handbook resume guide](https://www.techinterviewhandbook.org/resume/).
+If you want the reasoning behind *why* a CV should read the way this tool produces
+one, that guide is the best starting point.
 
 ## License
 
