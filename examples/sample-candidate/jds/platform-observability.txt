@@ -1,0 +1,26 @@
+Lumen Cloud — Platform Engineer, Observability (Remote)
+
+About the role
+Lumen Cloud runs a multi-tenant platform and we are investing heavily in observability. We
+are looking for a Platform Engineer to own the metrics, tracing, and logging stack and to
+make it effortless for product teams to operate their services. You will build paved-road
+tooling on Kubernetes and AWS and partner closely with our SRE function.
+
+What you will do
+- Own and scale the observability stack: Prometheus, Grafana, OpenTelemetry, and Datadog.
+- Integrate error tracking with Sentry across all services.
+- Build self-service dashboards, SLOs, and alerting for product teams.
+- Provision platform infrastructure on Kubernetes (AWS) with Terraform and Helm.
+- Automate configuration and host management with Ansible.
+- Maintain CI/CD pipelines and Docker-based build tooling.
+- Write platform tooling and exporters in Go.
+
+What we are looking for
+- Deep experience with Prometheus, Grafana, OpenTelemetry, and Datadog.
+- Production experience with Kubernetes, AWS, Terraform, Helm, and Ansible.
+- An SRE mindset: SLOs, error budgets, structured logging, and on-call health.
+- Proficiency in Go and a strong sense of developer experience.
+
+Nice to have
+- Experience with Sentry and distributed tracing at scale.
+- Cost-optimization work driven by tracing and metrics.

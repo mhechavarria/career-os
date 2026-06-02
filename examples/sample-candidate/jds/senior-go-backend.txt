@@ -1,0 +1,27 @@
+Orbital Systems — Senior Go Backend Engineer (Remote)
+
+About the role
+Orbital Systems builds the data platform behind a fleet of connected industrial devices.
+We are looking for a Senior Go Backend Engineer to own high-throughput services that ingest
+and serve device telemetry. You will work on distributed systems running on Kubernetes and
+AWS, designing for scale, reliability, and observability.
+
+What you will do
+- Design and build backend services in Go, exposing both gRPC and REST APIs.
+- Own event-driven pipelines on Apache Kafka, including consumer scaling and idempotency.
+- Run services on Kubernetes (AWS EKS), with Terraform for infrastructure as code.
+- Package and deploy workloads with Helm; manage configuration and fleet automation with Ansible.
+- Build and maintain CI/CD with GitHub Actions and Docker.
+- Instrument everything with Prometheus, Grafana, and Datadog; own services in an on-call rotation.
+- Work with PostgreSQL and Redis as primary data stores.
+
+What we are looking for
+- Strong experience building distributed systems and microservices in Go.
+- Deep familiarity with Apache Kafka, gRPC, and event-driven architecture.
+- Production experience with Kubernetes, AWS, Terraform, Helm, and Ansible.
+- A solid observability practice: Prometheus, Grafana, Datadog, structured logging.
+- Comfort owning PostgreSQL schema and query performance.
+
+Nice to have
+- Experience with OpenTelemetry-based distributed tracing.
+- Exposure to AI-augmented engineering tooling.
