@@ -159,7 +159,12 @@ def main() -> int:
             ],
         )
         cov = extract_coverage(proc.stdout)
-        ok = proc.returncode == 0
+        # new_application.py exits 0 even when its auto-PDF step only warns, so
+        # assert the PDF side effect (it prints "PDF: <path>" on success).
+        pdf_line = re.search(r"PDF:\s*(\S+)", proc.stdout)
+        pdf = work / pdf_line.group(1) if pdf_line else None
+        pdf_ok = pdf is not None and pdf.exists() and pdf.stat().st_size > 0
+        ok = proc.returncode == 0 and pdf_ok
         print(f"  {'OK ' if ok else 'FAIL'}  {company:<18} {proc.stdout.strip().splitlines()[0] if proc.stdout.strip() else ''}")
         if proc.stderr.strip():
             print("        " + proc.stderr.strip().replace("\n", "\n        "))
