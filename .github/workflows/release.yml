@@ -14,20 +14,46 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # full history so we can verify the tag sits on main
+
+      - name: Verify the tag is on main
+        run: |
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+          if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+            echo "::error::Tag $GITHUB_REF_NAME ($GITHUB_SHA) is not an ancestor of main — refusing to release. Cut releases from main."
+            exit 1
+          fi
+
       - name: Extract changelog section for this tag
         id: changelog
         run: |
           version="${GITHUB_REF_NAME#v}"
+
+          # Guard 1: there must be a matching CHANGELOG section for this tag.
+          if ! grep -qE "^## \[${version}\]" CHANGELOG.md; then
+            echo "::error::No \"## [${version}]\" section in CHANGELOG.md — add one before tagging ${GITHUB_REF_NAME}."
+            exit 1
+          fi
+
           notes=$(awk -v ver="$version" '
             $0 ~ "^## \\[" ver "\\]" {flag=1; next}
             /^## \[/ && flag {flag=0}
             flag {print}
           ' CHANGELOG.md)
+
+          # Guard 2: that section must not be empty — never publish a blank release.
+          if [ -z "$(printf '%s' "$notes" | tr -d '[:space:]')" ]; then
+            echo "::error::CHANGELOG.md section for ${version} is empty — refusing to publish a blank release."
+            exit 1
+          fi
+
           {
             echo "notes<<__EOF__"
             echo "$notes"
             echo "__EOF__"
           } >> "$GITHUB_OUTPUT"
+
       - name: Create release
         uses: softprops/action-gh-release@v3
         with:
