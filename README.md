@@ -264,9 +264,9 @@ Issues and PRs are welcome — see [CONTRIBUTING.md](CONTRIBUTING.md) and the
 
 The structure and philosophy of Career OS — impact-first, metrics-driven,
 evidence over adjectives — were inspired by the
-[Tech Interview Handbook resume guide](https://www.techinterviewhandbook.org/resume/).
-If you want the reasoning behind *why* a CV should read the way this tool produces
-one, that guide is the best starting point.
+[Tech Interview Handbook resume guide](https://www.techinterviewhandbook.org/resume/)
+by Yangshun Tay. If you want the reasoning behind *why* a CV should read the way
+this tool produces one, that guide is the best starting point.
 
 ## License
 
