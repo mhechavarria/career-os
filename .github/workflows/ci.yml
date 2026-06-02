@@ -74,3 +74,22 @@ jobs:
         with:
           name: skeleton-cv
           path: cv/master.pdf
+
+  example-pipeline:
+    name: End-to-end pipeline (sample-candidate)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install WeasyPrint system libraries
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libpango-1.0-0 libpangocairo-1.0-0 libgdk-pixbuf2.0-0 \
+            libffi-dev shared-mime-info
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Drive every script against the sample-candidate example
+        run: python3 examples/run_pipeline.py

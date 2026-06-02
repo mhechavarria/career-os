@@ -1,0 +1,27 @@
+Quasar — Staff Backend Engineer, Distributed Systems (Remote)
+
+About the role
+Quasar processes billions of events per day for a real-time risk platform. We are hiring a
+Staff Backend Engineer to set technical direction for our distributed systems: the
+event-driven core, the event sourcing model, and the high availability story that keeps it
+running. This is a hands-on staff role — you will write code, lead system design, and mentor.
+
+What you will do
+- Lead system design for event-driven services built around Apache Kafka and PostgreSQL.
+- Evolve our event sourcing architecture and the projections built on top of it.
+- Drive high availability and disaster-recovery design across multiple AWS regions.
+- Set standards for gRPC service contracts and backward compatibility.
+- Run workloads on Kubernetes, provisioned with Terraform, deployed with Helm.
+- Use Ansible for configuration management of supporting infrastructure.
+- Champion observability with Datadog, Prometheus, and OpenTelemetry.
+
+What we are looking for
+- Extensive experience designing distributed systems at scale.
+- Mastery of Apache Kafka, event-driven architecture, and event sourcing.
+- Strong PostgreSQL and data-modelling skills under high availability constraints.
+- Production experience with Kubernetes, AWS, Terraform, Helm, and Ansible.
+- Fluency in Go and TypeScript; excellent system design judgment.
+
+Nice to have
+- Experience authoring ADRs and leading design reviews.
+- Background spanning embedded or IoT through to cloud.
