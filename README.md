@@ -75,9 +75,14 @@ write files in the repo.
 
 ### 3. Run the intake
 
+**Have an old CV or LinkedIn profile?** Drop it into `sources/` first — the agent
+seeds your profile and role files from it (Phase 0) before interviewing you, so you
+skip the blank page. Otherwise the intake just starts from Phase 1.
+
 Tell the agent:
 
-> Read `AGENT.md` and follow it to set up my Career OS. Start with Phase 1.
+> Read `AGENT.md` and follow it to set up my Career OS. If I've added an old CV or
+> LinkedIn text to `sources/`, start with Phase 0; otherwise start with Phase 1.
 
 It asks one topic at a time and writes files as it goes. A full intake takes
 roughly 60–90 minutes, naturally split across sessions (one role per session is a
