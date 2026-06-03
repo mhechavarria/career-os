@@ -3,6 +3,8 @@
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 import jd_gap  # noqa: E402
@@ -79,3 +81,51 @@ def test_score_partial_and_weak_are_in_range():
 
 def test_score_empty_is_0():
     assert jd_gap.score([], [], []) == 0
+
+
+# --- "go" / short lowercase language detection ------------------------------
+
+
+def test_extract_detects_go_and_golang_fold():
+    # capitalized "Go" + "golang" both fold to the canonical "go"
+    counts = jd_gap.extract_tech_tokens("We build in Go; some services use golang too")
+    assert counts["go"] == 2
+    assert "golang" not in counts
+
+
+def test_extract_go_ignores_substrings():
+    # word-boundary + capitalized-only: going / good / google must not count
+    counts = jd_gap.extract_tech_tokens("Going to do good work on Google Cloud daily")
+    assert counts.get("go", 0) == 0
+
+
+def test_extract_go_ignores_english_phrases():
+    # ordinary English "go" phrases must not be miscounted as the language
+    counts = jd_gap.extract_tech_tokens(
+        "Candidates should go to market fast, go deep, and be a Go-getter"
+    )
+    assert counts.get("go", 0) == 0
+
+
+def test_extract_detects_go_in_tech_list():
+    counts = jd_gap.extract_tech_tokens("Backend services in Python, Go, and Rust")
+    assert counts["go"] == 1
+
+
+def test_count_in_text_go_matches_golang_variant():
+    assert jd_gap.count_in_text("go", "primarily written in golang") == 1
+    assert jd_gap.count_in_text("go", "we ship Go services") == 1
+
+
+# --- CLI: graceful missing-file handling ------------------------------------
+
+
+def test_main_exits_cleanly_on_missing_file(monkeypatch, tmp_path, capsys):
+    cv = tmp_path / "cv.md"
+    cv.write_text("# CV\nGo and Python.\n", encoding="utf-8")
+    missing_jd = tmp_path / "nope.txt"
+    monkeypatch.setattr(sys, "argv", ["jd_gap.py", str(missing_jd), str(cv)])
+    with pytest.raises(SystemExit) as exc:
+        jd_gap.main()
+    assert exc.value.code == 1
+    assert "not found" in capsys.readouterr().err

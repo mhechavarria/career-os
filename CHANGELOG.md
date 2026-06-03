@@ -9,6 +9,20 @@ mean for a template repo.
 
 ## [Unreleased]
 
+### Changed
+- `jd_gap.py` now detects **Go / Golang** as a keyword. "go" is two lowercase letters
+  the token regex couldn't see, so a Go requirement in a JD was previously invisible in
+  the gap report. Detection is scoped to the capitalized `Go` language token plus
+  `golang`, so ordinary English ("go to market", "go deep", "Go-getter") isn't miscounted.
+
+### Fixed
+- `jd_gap.py` no longer crashes with a raw `FileNotFoundError` traceback when the JD or
+  CV path is missing — it prints a clear error and exits 1, matching `generate_cv.py`.
+- `AGENT.md` now defines the `experience/<year>-<company>.md` filename rules (start year;
+  lowercase, hyphenated, accent-stripped company slug; contractor-via-agency handling),
+  and adds an explicit "never fabricate a metric — prefer a `- [ ] TODO:`" rule to the
+  bullet-quality standard.
+
 ## [1.2.0] — 2026-06-02
 
 ### Added
