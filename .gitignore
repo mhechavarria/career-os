@@ -20,3 +20,8 @@ venv/
 
 # Claude Code / local agent state
 .claude/
+
+# Raw intake material (old CV, LinkedIn export) — keep PII out of Git by default.
+# Remove these two lines in your own private instance if you want it version-tracked.
+sources/*
+!sources/README.md

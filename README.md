@@ -45,6 +45,7 @@ lock-in, no export button to beg for.
 ## What you get
 
 - A single source of truth for your profile, experience, and impact evidence.
+- Seed the intake from an existing CV or LinkedIn — skip the blank page.
 - Continuous impact capture — log wins as they happen, not during a panic.
 - On-demand, **ATS-compliant PDF CVs** generated from plain markdown.
 - Keyword **gap analysis** between any job description and your CV.
@@ -84,6 +85,7 @@ good pace).
 
 | Phase | Files produced |
 | --- | --- |
+| Source intake *(optional)* | draft `profile/` + `experience/` seeds from an old CV / LinkedIn |
 | Profile intake | `profile/*.md` |
 | Per-role deep-dive | `experience/<year>-<company>.md` + `impacts/impact-library.md` |
 | Brag doc | `impacts/brag-doc.md` |
@@ -123,6 +125,7 @@ resemblance to real people or companies is coincidental.)*
 ```text
 career-os/
 ├── AGENT.md             # AI intake instructions — start here
+├── sources/             # Optional: seed material (old CV, LinkedIn) for Phase 0
 ├── profile/             # Identity and positioning (about, headline, skills, ...)
 ├── experience/          # One file per role
 ├── impacts/             # Impact library + quarterly brag doc
