@@ -14,14 +14,32 @@ mean for a template repo.
   the token regex couldn't see, so a Go requirement in a JD was previously invisible in
   the gap report. Detection is scoped to the capitalized `Go` language token plus
   `golang`, so ordinary English ("go to market", "go deep", "Go-getter") isn't miscounted.
+- `new_application.py` now reuses a `--jd` file that already lives in `jds/` instead of
+  copying it to a second `jds/<company>-<role>.txt` — so a saved JD whose slug differs
+  from `<company>-<role>` no longer produces a duplicate, and the application's `jd_file`
+  points at the file you actually saved.
+- `new_application.py` slugs (and the matching `AGENT.md` filename rule) now transliterate
+  accents to ASCII (`José → jose`) instead of stripping them to a stray hyphen (`jos-…`),
+  keeping generated PDF and JD filenames clean for non-ASCII names.
+- `AGENT.md` impact-library guidance now lists the aggregate theme headings, scopes the
+  full inline-field set (`tags::`/`company::`/`category::`) to the per-company files while
+  the aggregate carries only `[company:: ]`, and clarifies that `category::` is an
+  orthogonal per-bullet tag, not a section heading.
 
 ### Fixed
 - `jd_gap.py` no longer crashes with a raw `FileNotFoundError` traceback when the JD or
   CV path is missing — it prints a clear error and exits 1, matching `generate_cv.py`.
+- `pipeline_report.py` now warns (on stderr) when an application references a missing
+  `jd_file`/`cv_version` instead of silently dropping it from the gap aggregation;
+  `new_application.py`'s missing-JD warning also moved to stderr for consistency.
 - `AGENT.md` now defines the `experience/<year>-<company>.md` filename rules (start year;
-  lowercase, hyphenated, accent-stripped company slug; contractor-via-agency handling),
-  and adds an explicit "never fabricate a metric — prefer a `- [ ] TODO:`" rule to the
-  bullet-quality standard.
+  lowercase, hyphenated, accent-transliterated company slug; contractor-via-agency
+  handling), and adds an explicit "never fabricate a metric — prefer a `- [ ] TODO:`"
+  rule to the bullet-quality standard.
+- `AGENT.md` / `cv/master.md` summary guidance reconciled (both now describe a short
+  2–4-sentence paragraph), the experience `status` enum is glossed, the CV **Skills**
+  block is documented as a condensed view of `profile/skills.md`, and the CV
+  bullet-count guidance is clarified as a ceiling (`generate_cv.py` warns above 5).
 
 ## [1.2.0] — 2026-06-02
 

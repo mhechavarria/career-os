@@ -273,9 +273,9 @@ For each story, collect: Situation → Task → Action → Result (quantified) �
 
 **`experience/<year>-<company>.md`** — the filename uses the role's **start** year and a
 company slug that is lowercase with spaces and punctuation turned into hyphens and accents
-stripped (e.g. `2021-nuvora-pay.md`). For a contractor placed at a client via an agency,
-use the **host company** in the filename and record the employer in the frontmatter `role:`
-and the Context section. Use this schema:
+transliterated to ASCII (José → jose, so `2021-nuvora-pay.md`, not `jos-…`). For a
+contractor placed at a client via an agency, use the **host company** in the filename and
+record the employer in the frontmatter `role:` and the Context section. Use this schema:
 
 ```yaml
 ---
@@ -289,6 +289,11 @@ status: <complete | session-complete | active>
 tags: []
 ---
 ```
+
+`status` tracks how finished the role's documentation is, not the employment: `active`
+= you still hold this role (also seed `impacts/brag-doc.md` from it); `complete` = a past
+role you've fully documented; `session-complete` = drafted enough this session to move on,
+with `- [ ] TODO:` items still open to revisit.
 
 Sections:
 ```
@@ -308,7 +313,19 @@ Sections:
 ## STAR Story Seeds
 ```
 
-**`impacts/impact-library.md`** — extract the 2–3 strongest bullets from the role and add them under the relevant heading. For many roles you can split into per-company files (`impacts/impact-library-<company>.md`, adding the `company`/`period` frontmatter below) and link them from the file's Company Libraries section:
+**`impacts/impact-library.md`** — the curated, cross-company digest. Extract the 2–3 strongest bullets from the role and add them under the relevant **theme heading**. The aggregate file is organized by these section headings (use only those that apply):
+
+```
+## Architecture & System Design
+## Reliability & Resilience
+## Performance & Scalability
+## Automation & Developer Experience
+## Cross-Layer Impact
+## AI-Augmented Engineering
+## Cost Optimization
+```
+
+In the aggregate file each bullet carries only a `[company:: CompanyName]` tag, so the source stays traceable while the digest stays scannable. For many roles you can also split the detail into per-company files (`impacts/impact-library-<company>.md`, adding the `company`/`period` frontmatter below) and link them from the aggregate file's Company Libraries section. The **per-company** bullets carry the full inline-field set:
 
 ```yaml
 ---
@@ -319,10 +336,13 @@ tags: []
 ---
 ```
 
-Bullet format:
+Bullet format (per-company files carry all three inline fields; the aggregate carries only `[company:: ]`):
+
 ```
 - <Action verb> + <what you did> + <measurable outcome>. [tags:: tag1, tag2] [company:: CompanyName] [category:: <technical-depth | innovation | reliability | scope-of-impact | cost-optimization | automation | leadership>]
 ```
+
+`category::` is an **orthogonal per-bullet tag** for Dataview filtering (the *kind* of impact), not the section heading (the *theme*): a `reliability` bullet lives under "Reliability & Resilience", a `technical-depth` one under "Architecture & System Design". `tags::` is a free-form lowercase keyword list (`kafka`, `terraform`, `observability`) — reuse the same spellings across bullets so Dataview queries group cleanly.
 
 **Bullet quality standard — every bullet must:**
 - Start with a past-tense action verb (Led, Reduced, Migrated, Built, Automated, Designed...)
@@ -381,10 +401,10 @@ Pull the strongest bullets from all impact-library files. Structure:
 <Email> | <Phone> | <Location> | <LinkedIn> | <GitHub>
 
 ## Summary
-<3 short paragraphs: value proposition | current direction | job seeking intent>
+<A short paragraph, 2–4 sentences: value proposition · current direction · what you're seeking>
 
 ## Experience
-<Roles in reverse-chronological order, 3–5 bullets each>
+<Roles in reverse-chronological order, up to 3–5 bullets each — generate_cv.py warns above 5>
 
 ## Skills
 <Core (current) | Background | Frameworks | Observability | Languages>
@@ -407,6 +427,11 @@ date: <YYYY-MM-DD>
 status: draft
 ---
 ```
+
+The CV **Skills** block (Core · Background · Frameworks · Observability · Languages) is a
+condensed, recruiter-facing selection drawn from the fuller `profile/skills.md` inventory —
+promote current/relevant skills to **Core**, fold older ones into **Background**, and drop
+anything off-target. It is a CV view of the same skills, not a second source of truth.
 
 **5b. Tailored CV (`cv/versions/<slug>.md`)**
 
@@ -460,8 +485,11 @@ The PDF lands next to the markdown file: `cv/versions/<slug>.pdf`.
 
 When the user is ready to apply to a role:
 
-1. Save the raw JD to `jds/<slug>.txt`
+1. Save the raw JD to `jds/<slug>.txt`. Reuse the **same `<slug>`** as the tailored CV
+   (`cv/versions/<slug>.md`) so the application's `jd_file` and `cv_version` line up.
 2. Run: `python3 scripts/new_application.py --company <name> --role <title> --jd jds/<slug>.txt --cv cv/versions/<slug>.md`
+   — when the `--jd` path already lives in `jds/`, the script reuses that file in place
+   rather than copying it to a second `jds/<company>-<role>.txt`.
 3. Open the created file in `applications/` — review Gap Analysis section
 4. Address any MISSING keywords in the tailored CV before sending
 5. Update `stage` in frontmatter as the application progresses
