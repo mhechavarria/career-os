@@ -11,8 +11,9 @@ mean for a template repo.
 
 ### Changed
 - `jd_gap.py` now detects **Go / Golang** as a keyword. "go" is two lowercase letters
-  that the token regex couldn't see, so a Go requirement in a JD was previously invisible
-  in the gap report (word-boundary matching keeps it from matching "going"/"good").
+  the token regex couldn't see, so a Go requirement in a JD was previously invisible in
+  the gap report. Detection is scoped to the capitalized `Go` language token plus
+  `golang`, so ordinary English ("go to market", "go deep", "Go-getter") isn't miscounted.
 
 ### Fixed
 - `jd_gap.py` no longer crashes with a raw `FileNotFoundError` traceback when the JD or

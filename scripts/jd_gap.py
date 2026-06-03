@@ -292,11 +292,10 @@ TECH_PHRASES = [
     "asynchronous communication",
     # Single-word tech terms missed by the CamelCase regex
     # (kafka, redis, nginx, etc. don't follow CamelCase or ALL_CAPS)
-    # Short / lowercase language names the token regex can't see: "go" is two
-    # lowercase letters, so without an explicit phrase a Go requirement is
-    # invisible. Word-boundary matching (\b) keeps "go" from matching "going".
+    # "golang" is unambiguous; the bare "Go" language token is detected
+    # separately in extract_tech_tokens() (capitalized only) so it doesn't
+    # match ordinary English like "go to market" / "go deep".
     "golang",
-    "go",
     "kafka",
     "redis",
     "nginx",
@@ -352,6 +351,16 @@ def extract_tech_tokens(text: str) -> Counter:
             counts[phrase] += count
             # Blank out matched phrases so sub-terms don't double-count
             norm = re.sub(r"\b" + re.escape(phrase) + r"\b", " ", norm)
+
+    # "Go" the language: a capitalized standalone token, excluding the common
+    # English phrases a bare lowercase "go" would catch ("go to market",
+    # "go deep", "Go-getter"). "golang" (TECH_PHRASES above) folds into "go".
+    go_matches = re.findall(
+        r"\bGo\b(?!-)(?!\s+(?:to|deep|above|beyond|live|the|further|all))",
+        text,
+    )
+    if go_matches:
+        counts["go"] += len(go_matches)
 
     # Tech-formatted single tokens from original text
     tech_token = re.compile(

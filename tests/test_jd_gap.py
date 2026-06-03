@@ -87,16 +87,29 @@ def test_score_empty_is_0():
 
 
 def test_extract_detects_go_and_golang_fold():
-    # "go" (two lowercase letters) and "golang" both fold to canonical "go"
+    # capitalized "Go" + "golang" both fold to the canonical "go"
     counts = jd_gap.extract_tech_tokens("We build in Go; some services use golang too")
     assert counts["go"] == 2
     assert "golang" not in counts
 
 
 def test_extract_go_ignores_substrings():
-    # word-boundary matching: going / good / google must not count as "go"
+    # word-boundary + capitalized-only: going / good / google must not count
     counts = jd_gap.extract_tech_tokens("Going to do good work on Google Cloud daily")
     assert counts.get("go", 0) == 0
+
+
+def test_extract_go_ignores_english_phrases():
+    # ordinary English "go" phrases must not be miscounted as the language
+    counts = jd_gap.extract_tech_tokens(
+        "Candidates should go to market fast, go deep, and be a Go-getter"
+    )
+    assert counts.get("go", 0) == 0
+
+
+def test_extract_detects_go_in_tech_list():
+    counts = jd_gap.extract_tech_tokens("Backend services in Python, Go, and Rust")
+    assert counts["go"] == 1
 
 
 def test_count_in_text_go_matches_golang_variant():
