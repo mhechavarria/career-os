@@ -9,6 +9,8 @@ mean for a template repo.
 
 ## [Unreleased]
 
+## [1.2.0] — 2026-06-02
+
 ### Added
 - **Source intake (Phase 0)** — an optional first intake phase in `AGENT.md` plus a
   `sources/` folder: drop an old CV (`.md` / `.txt` / `.pdf`) or pasted LinkedIn text
@@ -59,6 +61,7 @@ mean for a template repo.
 - Project governance: MIT license, contribution guide, code of conduct, security
   policy, PR/issue templates, Dependabot, and CI (lint · test · PDF render).
 
-[Unreleased]: https://github.com/mhechavarria/career-os/compare/v1.1.0...HEAD
+[Unreleased]: https://github.com/mhechavarria/career-os/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/mhechavarria/career-os/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/mhechavarria/career-os/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/mhechavarria/career-os/releases/tag/v1.0.0
