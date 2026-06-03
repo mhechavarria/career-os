@@ -9,6 +9,14 @@ mean for a template repo.
 
 ## [Unreleased]
 
+### Added
+- **Source intake (Phase 0)** — an optional first intake phase in `AGENT.md` plus a
+  `sources/` folder: drop an old CV (`.md` / `.txt` / `.pdf`) or pasted LinkedIn text
+  and the agent seeds your profile and role skeletons from it, so the interview can
+  focus on the metrics and evidence those documents lack. Imported bullets without a
+  number land as `- [ ] TODO:` items, and raw sources are gitignored by default to
+  keep PII out of Git.
+
 ## [1.1.0] — 2026-06-02
 
 ### Added

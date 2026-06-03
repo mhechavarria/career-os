@@ -25,6 +25,80 @@ Read this file fully before starting. Then follow the phases in order. Do not du
 | `applications/pipeline.md` | Dataview dashboard: all job applications by stage |
 | `applications/<company-slug>-YYYY-MM.md` | Per-application file: pipeline, notes, feedback loop |
 | `jds/<slug>.txt` | Archived raw job descriptions for gap analysis |
+| `sources/<file>` | Optional raw intake material (old CV, LinkedIn text) — seeds Phase 0; gitignored by default |
+
+---
+
+## Phase 0 — Source Intake (optional)
+
+**Goal:** Seed the intake from material the user already has — an old CV, a
+LinkedIn profile — so the interview spends its time on what those documents almost
+never contain (quantified outcomes, evidence, stories) instead of re-typing names
+and dates from a blank page.
+
+Skip this phase only if the user is genuinely starting from nothing. Otherwise do it
+first: it makes every later phase faster and turns Phase 3 from an interrogation into
+a confirmation.
+
+### The one rule: seed, don't autocomplete
+
+Imported content is a **set of claims to verify, never finished output.** Old CVs are
+full of vague, unquantified bullets; LinkedIn "About" sections are marketing prose.
+Career OS trades in evidence, not adjectives — so:
+
+- Use imported material to pre-fill the *factual scaffolding*: names, titles, dates,
+  team sizes, skills, and the list of roles.
+- Do **not** copy vague or unquantified bullets into the impact library as-is. Pull
+  them in as candidates, then push for the number during the interview.
+- Every imported bullet that lacks a quantified outcome becomes a
+  `- [ ] TODO: number?` so it stays visibly unfinished.
+- Never invent a metric to "complete" an imported bullet. If the user can't quantify
+  it, it stays a TODO or gets cut.
+
+### How the user provides sources
+
+Either drop files into `sources/` (an old CV as `.md`, `.txt`, or `.pdf`; LinkedIn
+"About" + experience pasted into a `.txt`), or paste the content directly into the
+chat. Format notes:
+
+- **Markdown / plain text / pasted** — read it directly.
+- **PDF** — if your editor's agent can read PDFs (Claude Code can), read the file in
+  `sources/` directly. Otherwise ask the user to paste the text or export the CV to
+  markdown.
+- **DOCX / other binaries** — ask the user to export to PDF or paste the text.
+  *(Automated DOCX/PDF extraction is a planned follow-up script.)*
+- **LinkedIn** — the cleanest source is the user's own data export
+  (*Settings → Get a copy of your data*) or a copy-paste of the About + Experience
+  sections. Do not scrape a live profile URL.
+
+### What to extract and where it goes
+
+Read every source, then build *draft* files:
+
+| From the source | Seeds | What the interview still owns |
+|---|---|---|
+| Name, contact, location | `profile/about.md` header, later `cv/master.md` | confirm / correct |
+| LinkedIn headline | `profile/headline.md` | sharpen to target roles |
+| LinkedIn "About" | `profile/about.md` | rewrite from marketing voice → real narrative |
+| Skills list | `profile/skills.md` | categorize, prune to what's current |
+| Each past role (company, title, dates) | `experience/<year>-<company>.md` skeleton | **all** impact, metrics, STAR stories |
+| CV bullets | candidate entries in `impacts/impact-library.md` | quantify each; drop the unsupportable |
+
+Write the role skeletons using the Phase 3 schema, with the impact sections left as
+`- [ ] TODO:` items. This is what turns Phase 3 from "tell me everything" into "I've
+got your roles and dates — let's dig into the impact for each."
+
+### Hand-off to the interview
+
+After seeding, tell the user what you imported and what is still blank, then continue
+into Phase 1 as **verification, not interrogation**:
+
+> "I read your CV and LinkedIn and drafted your profile plus five role files with the
+> basics filled in. What's missing everywhere is the numbers — so as we go role by
+> role, I'll mostly be asking 'what was the before/after?' Let's start by confirming
+> your profile."
+
+Then proceed to Phase 1.
 
 ---
 
