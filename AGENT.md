@@ -271,7 +271,11 @@ For each story, collect: Situation → Task → Action → Result (quantified) �
 
 ### Files to produce after each role:
 
-**`experience/<year>-<company>.md`** — use this schema:
+**`experience/<year>-<company>.md`** — the filename uses the role's **start** year and a
+company slug that is lowercase with spaces and punctuation turned into hyphens and accents
+stripped (e.g. `2021-nuvora-pay.md`). For a contractor placed at a client via an agency,
+use the **host company** in the filename and record the employer in the frontmatter `role:`
+and the Context section. Use this schema:
 
 ```yaml
 ---
@@ -326,6 +330,11 @@ Bullet format:
 - Describe impact, not activity ("reduced deployment failures by 40%" not "worked on CI pipeline")
 - Be ~12–18 words
 - Pass the "so what?" test: a recruiter should immediately understand why it matters
+
+**Never fabricate a metric to satisfy this standard.** If a real achievement has no number
+the user can give, keep it as a `- [ ] TODO: number?` rather than inventing one, and leave
+it out of the CV until it's quantified — an honest gap always beats a made-up number. This
+is the same "seed, don't autocomplete" rule from Phase 0, applied to the whole interview.
 
 ---
 

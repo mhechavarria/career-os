@@ -13,6 +13,7 @@ Outputs:
 
 import argparse
 import re
+import sys
 from pathlib import Path
 from collections import Counter
 
@@ -291,6 +292,11 @@ TECH_PHRASES = [
     "asynchronous communication",
     # Single-word tech terms missed by the CamelCase regex
     # (kafka, redis, nginx, etc. don't follow CamelCase or ALL_CAPS)
+    # Short / lowercase language names the token regex can't see: "go" is two
+    # lowercase letters, so without an explicit phrase a Go requirement is
+    # invisible. Word-boundary matching (\b) keeps "go" from matching "going".
+    "golang",
+    "go",
     "kafka",
     "redis",
     "nginx",
@@ -322,6 +328,7 @@ SYNONYMS = {
     "mono-repo": "monorepo",
     "event driven architecture": "event-driven architecture",
     "infrastructure-as-code": "infrastructure as code",
+    "golang": "go",
 }
 
 
@@ -456,6 +463,14 @@ def main() -> None:
     parser.add_argument("jd", help="Path to the JD text file (e.g. jds/role.txt)")
     parser.add_argument("cv", help="Path to the CV markdown file (e.g. cv/master.md)")
     args = parser.parse_args()
+
+    # Fail with a clear message instead of an unhandled traceback (matches
+    # generate_cv.py). run() itself still raises for library callers.
+    for label, path in (("JD", args.jd), ("CV", args.cv)):
+        if not Path(path).exists():
+            print(f"Error: {label} file not found: {path}", file=sys.stderr)
+            sys.exit(1)
+
     run(args.jd, args.cv)
 
 
