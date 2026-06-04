@@ -280,13 +280,16 @@ For each story, collect: Situation → Task → Action → Result (quantified) �
 company slug that is lowercase with spaces and punctuation turned into hyphens and accents
 transliterated to ASCII (José → jose, so `2021-nuvora-pay.md`, not `jos-…`). For a
 contractor placed at a client via an agency, use the **host company** in the filename and
-record the employer in the frontmatter `role:` and the Context section. Use this schema:
+`company:`, and name the staffing agency / legal employer in the dedicated `employer:` field
+— **not** in `role:`, which is reserved for the job title. (`employer:` is the "via" in
+"Globex via Initech".) Spell the arrangement out in the Context section too. Use this schema:
 
 ```yaml
 ---
 type: experience
 company: <string>
 role: <string>
+employer: <string>
 team-type: <remote | hybrid | onsite>
 start: <YYYY or YYYY-MM>
 end: <YYYY or YYYY-MM or present>
@@ -295,10 +298,25 @@ tags: []
 ---
 ```
 
+`company:` is the host/client where the work happened; `role:` is the job **title** only;
+`employer:` is **optional** — set it to the staffing agency or legal employer for a contract
+placement, and omit it entirely for direct employment (don't write `employer: self` or repeat
+the company).
+
 `status` tracks how finished the role's documentation is, not the employment: `active`
 = you still hold this role (also seed `impacts/brag-doc.md` from it); `complete` = a past
 role you've fully documented; `session-complete` = drafted enough this session to move on,
 with `- [ ] TODO:` items still open to revisit.
+
+**Contract-to-hire at the same host.** When a contract **converts to a direct hire at the
+same company**, don't split one continuous tenure into two jobs. Keep a **single**
+`experience/<startyear>-<host>.md` file spanning the whole tenure (`start` = the first
+contract month, `end` = `present` or the last month), and record the two phases with their
+own dates in the Context section — e.g. "Adecco contract Jan 2021 – Jun 2022, converted to
+direct full-time Jul 2022 – present". Set `employer:` to reflect the change
+(`Adecco (contract) → direct`). On the CV, mark the conversion on the role line rather than
+inventing a second job. Don't launder the contract phase into apparent direct employment, and
+don't fabricate a separate role to represent it.
 
 Sections:
 ```
@@ -323,6 +341,16 @@ replace them with a `## Leadership & Management` section covering team growth (e
 engineers), hiring, delivery (shipped v1 on schedule), and people/process outcomes. Hold it
 to the same honesty bar as any IC bullet — real team sizes and outcomes only, never
 latency/throughput metrics invented for work that was managerial.
+
+For a **non-engineering prior career** (teaching, military service, a trade, scientific
+research before the switch into software), the IC Impact Categories won't fit either. Keep
+the file lighter: a full `## Context` plus a `## Prior-Career Impact` section that records
+outcomes **in that domain's own terms**, and label any metrics as what they are — a teacher's
+"AP CS pass rate 0 → 78%" is an education outcome, not an engineering metric. Never relabel a
+domain achievement as software impact or promote it into `impacts/impact-library.md` (which is
+the *engineering* digest). On the CV these roles usually condense into `### Earlier Experience`
+(Phase 5) or just inform the narrative in `profile/` — they establish trajectory, not
+engineering scope.
 
 **`impacts/impact-library.md`** — the curated, cross-company digest. Extract the 2–3 strongest bullets from the role and add them under the relevant **theme heading**. The aggregate file is organized by these section headings (use only those that apply):
 
@@ -460,6 +488,17 @@ no bullets. Keep the same `MMM YYYY` date format as the recent roles — `genera
 warns on year-only ranges anywhere in the Experience block, so don't drop to bare years
 here. Never fabricate bullets to pad a thin old role, and never break reverse-chronological
 order to make it fit: **compress, don't reorder.**
+
+**Employment gaps.** A multi-year break between roles (caregiving, health, study, a layoff, a
+career change) is common and not something to hide. The default is to let it stay **implicitly
+visible** through honest, non-overlapping dates — never invent a "Freelance" or "Consultant"
+job to bridge it, stretch an adjacent role's end date over it, or otherwise paper it over. If
+the user *wants* to account for the gap, two honest options, usable together: a brief, truthful
+note in `profile/about.md` / `profile/evolution.md` (the narrative layer), and/or a single
+clearly-labeled line on the CV in its chronological position
+(`Career Break — MMM YYYY – MMM YYYY — <one-line reason>`) that reads plainly as a break and is
+**never** dressed up as employment with a title, company, or bullets. Same honesty rule as
+everywhere: a visible gap beats a fabricated job.
 
 **5b. Tailored CV (`cv/versions/<slug>.md`)**
 
