@@ -9,6 +9,8 @@ mean for a template repo.
 
 ## [Unreleased]
 
+## [1.3.0] — 2026-06-04
+
 ### Changed
 - `AGENT.md` Phase 0 now treats **quantitative self-claims** imported from an old CV /
   LinkedIn (years of experience, "millions of users", "10x faster") as unverified — confirm
@@ -121,7 +123,8 @@ mean for a template repo.
 - Project governance: MIT license, contribution guide, code of conduct, security
   policy, PR/issue templates, Dependabot, and CI (lint · test · PDF render).
 
-[Unreleased]: https://github.com/mhechavarria/career-os/compare/v1.2.0...HEAD
+[Unreleased]: https://github.com/mhechavarria/career-os/compare/v1.3.0...HEAD
+[1.3.0]: https://github.com/mhechavarria/career-os/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/mhechavarria/career-os/compare/v1.1.0...v1.2.0
 [1.1.0]: https://github.com/mhechavarria/career-os/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/mhechavarria/career-os/releases/tag/v1.0.0
