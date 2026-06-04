@@ -330,6 +330,16 @@ SYNONYMS = {
     "golang": "go",
 }
 
+# Language names that are also common English words ("Go", "Rust") are detected
+# as capitalized standalone tokens rather than via TECH_PHRASES, so ordinary
+# prose ("go to market", "rust never sleeps", "trust") isn't miscounted as the
+# language. This is the extensible home for that class of term — the curated
+# TECH_PHRASES list can't safely hold a bare common word, so add new ones here.
+CAPITALIZED_LANG_TOKENS = {
+    "go": r"\bGo\b(?!-)(?!\s+(?:to|deep|above|beyond|live|the|further|all))",
+    "rust": r"\bRust\b(?!\s+Belt)",
+}
+
 
 def strip_markdown(text: str) -> str:
     text = re.sub(r"^---[\s\S]*?---\n", "", text)
@@ -352,15 +362,14 @@ def extract_tech_tokens(text: str) -> Counter:
             # Blank out matched phrases so sub-terms don't double-count
             norm = re.sub(r"\b" + re.escape(phrase) + r"\b", " ", norm)
 
-    # "Go" the language: a capitalized standalone token, excluding the common
-    # English phrases a bare lowercase "go" would catch ("go to market",
-    # "go deep", "Go-getter"). "golang" (TECH_PHRASES above) folds into "go".
-    go_matches = re.findall(
-        r"\bGo\b(?!-)(?!\s+(?:to|deep|above|beyond|live|the|further|all))",
-        text,
-    )
-    if go_matches:
-        counts["go"] += len(go_matches)
+    # Language names that are also common English words ("Go", "Rust"):
+    # capitalized standalone tokens only (see CAPITALIZED_LANG_TOKENS), so prose
+    # like "go to market" / "trust" isn't miscounted. "golang" (in TECH_PHRASES)
+    # folds into "go" via SYNONYMS.
+    for canon, pattern in CAPITALIZED_LANG_TOKENS.items():
+        n = len(re.findall(pattern, text))
+        if n:
+            counts[canon] += n
 
     # Tech-formatted single tokens from original text
     tech_token = re.compile(

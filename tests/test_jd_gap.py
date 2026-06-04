@@ -117,6 +117,23 @@ def test_count_in_text_go_matches_golang_variant():
     assert jd_gap.count_in_text("go", "we ship Go services") == 1
 
 
+# --- "rust" capitalized-token detection -------------------------------------
+
+
+def test_extract_detects_rust_capitalized_token():
+    # capitalized "Rust" is the language, counted like "Go"
+    counts = jd_gap.extract_tech_tokens("Backend in Go and Rust")
+    assert counts["rust"] == 1
+
+
+def test_extract_rust_ignores_english_and_rust_belt():
+    # lowercase prose (trust, rusty) and "Rust Belt" must not count as the language
+    counts = jd_gap.extract_tech_tokens(
+        "We trust the process, no rusty code, hiring across the Rust Belt"
+    )
+    assert counts.get("rust", 0) == 0
+
+
 # --- CLI: graceful missing-file handling ------------------------------------
 
 

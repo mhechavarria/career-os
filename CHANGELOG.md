@@ -14,6 +14,11 @@ mean for a template repo.
   the token regex couldn't see, so a Go requirement in a JD was previously invisible in
   the gap report. Detection is scoped to the capitalized `Go` language token plus
   `golang`, so ordinary English ("go to market", "go deep", "Go-getter") isn't miscounted.
+- `jd_gap.py` now also detects **Rust** (a capitalized standalone token, the same
+  treatment as `Go`), so a "Rust" requirement in a JD is no longer invisible in the gap
+  report. Both common-English-word language names now live in one extensible
+  `CAPITALIZED_LANG_TOKENS` map; lowercase prose ("trust", "rusty", "Rust Belt") still
+  isn't miscounted.
 - `new_application.py` now reuses a `--jd` file that already lives in `jds/` instead of
   copying it to a second `jds/<company>-<role>.txt` — so a saved JD whose slug differs
   from `<company>-<role>` no longer produces a duplicate, and the application's `jd_file`
@@ -32,6 +37,9 @@ mean for a template repo.
 - `pipeline_report.py` now warns (on stderr) when an application references a missing
   `jd_file`/`cv_version` instead of silently dropping it from the gap aggregation;
   `new_application.py`'s missing-JD warning also moved to stderr for consistency.
+- `pipeline_report.py`'s missing-keyword section is now titled "MASTER-CV GAP SUGGESTIONS
+  — keywords missing across applications" (was "MASTER CV GAPS"), making clear it
+  aggregates each application's *tailored* `cv_version` rather than scanning `cv/master.md`.
 - `AGENT.md` now defines the `experience/<year>-<company>.md` filename rules (start year;
   lowercase, hyphenated, accent-transliterated company slug; contractor-via-agency
   handling), and adds an explicit "never fabricate a metric — prefer a `- [ ] TODO:`"

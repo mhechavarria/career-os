@@ -127,8 +127,10 @@ def main():
         if str(app.get("stage", "applied")) not in {"applied"} | CLOSED_STAGES:
             cv_perf[cv]["screens"] += 1
 
-    # Print report
-    print("\n=== MASTER CV GAPS — top missing keywords ===")
+    # Print report. The missing-keyword aggregate below is computed across each
+    # application's *tailored* cv_version (not a scan of cv/master.md); a keyword
+    # missing from many applications is a strong candidate to add to the master CV.
+    print("\n=== MASTER-CV GAP SUGGESTIONS — keywords missing across applications ===")
     if missing_counter:
         for term, count in missing_counter.most_common(20):
             priority = "!!" if count >= 3 else " !"
