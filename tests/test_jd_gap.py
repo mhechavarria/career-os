@@ -117,6 +117,43 @@ def test_count_in_text_go_matches_golang_variant():
     assert jd_gap.count_in_text("go", "we ship Go services") == 1
 
 
+# --- "rust" capitalized-token detection -------------------------------------
+
+
+def test_extract_detects_rust_capitalized_token():
+    # capitalized "Rust" is the language, counted like "Go"
+    counts = jd_gap.extract_tech_tokens("Backend in Go and Rust")
+    assert counts["rust"] == 1
+
+
+def test_extract_rust_ignores_english_and_rust_belt():
+    # lowercase prose (trust, rusty) and "Rust Belt" must not count as the language
+    counts = jd_gap.extract_tech_tokens(
+        "We trust the process, no rusty code, hiring across the Rust Belt"
+    )
+    assert counts.get("rust", 0) == 0
+
+
+# --- CV-coverage side: bare-word languages use the same guarded matcher -------
+# count_in_text() checks whether the CV covers a JD term; for "Go"/"Rust" it must
+# apply the capitalized, context-guarded pattern (not a lowercased \bword\b), or a
+# CV that merely says "Rust Belt" / "go to market" would be scored as covering the
+# language and the real gap would be dropped from the report.
+
+
+def test_count_in_text_rust_ignores_rust_belt_in_cv():
+    assert jd_gap.count_in_text("rust", "Engineers based in the Rust Belt") == 0
+    assert jd_gap.count_in_text("rust", "We trust the process; nothing rusty") == 0
+    # genuine coverage still counts
+    assert jd_gap.count_in_text("rust", "Shipped a Rust service") == 1
+
+
+def test_count_in_text_go_ignores_english_prose_in_cv():
+    assert jd_gap.count_in_text("go", "We go to market fast and go deep") == 0
+    # genuine coverage (capitalized Go and the golang variant) still counts
+    assert jd_gap.count_in_text("go", "Built backend services in Go using golang") == 2
+
+
 # --- CLI: graceful missing-file handling ------------------------------------
 
 
