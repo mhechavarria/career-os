@@ -10,6 +10,21 @@ mean for a template repo.
 ## [Unreleased]
 
 ### Changed
+- `AGENT.md` Phase 0 now treats **quantitative self-claims** imported from an old CV /
+  LinkedIn (years of experience, "millions of users", "10x faster") as unverified — confirm
+  them against the role dates and the interview or drop them, never copy a tenure or scale
+  claim straight into the CV summary.
+- `AGENT.md` Phase 5 tailored-CV guidance now keeps roles in **reverse-chronological order**
+  when tailoring (tailor by bullet selection and the summary, not by reordering roles — an
+  out-of-order work history reads as an error to recruiters and ATS parsers).
+- `AGENT.md` Phase 5 documents an **`Earlier Experience`** condensation pattern for long
+  careers (more than ~5–6 roles): full bullets for the recent 3–4 roles, one line each for
+  the rest, so the CV stays within the 2-page cap without reordering or padding.
+- `AGENT.md` Phase 3 experience schema now covers **management / lead roles** via an optional
+  `Leadership & Management` section, giving leadership impact a home in the IC-centric schema.
+- `AGENT.md` adds an optional **`Open (unquantified)`** impact-library holding section for
+  achievements that aren't CV-ready yet, and the bullet-quality rule now prefers the user's
+  literal before/after over a derived multiplier ("weekly → daily", not "~5×").
 - `jd_gap.py` now detects **Go / Golang** as a keyword. "go" is two lowercase letters
   the token regex couldn't see, so a Go requirement in a JD was previously invisible in
   the gap report. Detection is scoped to the capitalized `Go` language token plus
