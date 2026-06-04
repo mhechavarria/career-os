@@ -19,6 +19,11 @@ mean for a template repo.
   report. Both common-English-word language names now live in one extensible
   `CAPITALIZED_LANG_TOKENS` map; lowercase prose ("trust", "rusty", "Rust Belt") still
   isn't miscounted.
+- `jd_gap.py` now applies that same guarded matcher when checking whether the **CV**
+  covers a `Go`/`Rust` requirement, not just when reading the JD. Previously a CV that
+  merely mentioned "Rust Belt" (or "go to market") was counted as covering the language,
+  so a genuinely missing requirement was silently dropped from the gap report instead of
+  flagged as MISSING.
 - `new_application.py` now reuses a `--jd` file that already lives in `jds/` instead of
   copying it to a second `jds/<company>-<role>.txt` — so a saved JD whose slug differs
   from `<company>-<role>` no longer produces a duplicate, and the application's `jd_file`

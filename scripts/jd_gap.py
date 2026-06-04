@@ -400,10 +400,19 @@ def _variants_of(term: str) -> list:
 
 def count_in_text(term: str, text: str) -> int:
     text_lower = text.lower()
-    return sum(
-        len(re.findall(r"\b" + re.escape(variant) + r"\b", text_lower))
-        for variant in _variants_of(term)
-    )
+    total = 0
+    for variant in _variants_of(term):
+        if variant in CAPITALIZED_LANG_TOKENS:
+            # Bare common-word language names ("Go", "Rust") are matched with the
+            # same capitalized, context-guarded pattern used for JD extraction —
+            # against original-case text — so CV prose ("Rust Belt", "go to market")
+            # isn't miscounted as covering the language. A lowercased \bword\b here
+            # would falsely mark such a CV as covering the keyword and drop a real
+            # gap from the report.
+            total += len(re.findall(CAPITALIZED_LANG_TOKENS[variant], text))
+        else:
+            total += len(re.findall(r"\b" + re.escape(variant) + r"\b", text_lower))
+    return total
 
 
 def score(missing: list, weak: list, present: list) -> int:
