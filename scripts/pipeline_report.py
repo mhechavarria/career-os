@@ -99,6 +99,16 @@ def main():
         jd_file = str(app.get("jd_file") or "")
         cv_file = str(app.get("cv_version") or "")
         if jd_file and jd_file != "null" and cv_file:
+            if not (REPO_ROOT / jd_file).exists() or not (REPO_ROOT / cv_file).exists():
+                # Surface dangling references instead of silently dropping the
+                # application from gap analysis (finding D1).
+                print(
+                    f"Warning: application references a missing file "
+                    f"(jd_file={jd_file}, cv_version={cv_file}) "
+                    f"— excluded from gap analysis",
+                    file=sys.stderr,
+                )
+                continue
             for term in get_missing_terms(jd_file, cv_file):
                 missing_counter[term] += 1
 

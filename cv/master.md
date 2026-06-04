@@ -11,7 +11,7 @@ you@example.com | +1 555 123 4567 | City, Country | linkedin.com/in/your-handle 
 
 ## Summary
 
-Replace this with 2–3 sentences: your value proposition, your current direction, and what you are looking for. Lead with your specialty and the scale you operate at — for example, systems serving 1M+ users across 3 regions.
+Replace this with a short paragraph (2–4 sentences): your value proposition, your current direction, and what you are looking for. Lead with your specialty and the scale you operate at — for example, systems serving 1M+ users across 3 regions.
 
 ## Experience
 

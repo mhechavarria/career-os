@@ -24,6 +24,7 @@ import io
 import re
 import subprocess
 import sys
+import unicodedata
 from datetime import date
 from pathlib import Path
 
@@ -34,6 +35,11 @@ REPO_ROOT = Path(__file__).parent.parent
 
 
 def slugify(text: str) -> str:
+    # NFKD-normalize and drop combining marks so accented characters
+    # transliterate to ASCII (José → jose) instead of being stripped to
+    # hyphens (jos-) and mangling the resulting filename.
+    text = unicodedata.normalize("NFKD", text)
+    text = text.encode("ascii", "ignore").decode("ascii")
     text = text.lower()
     text = re.sub(r"[^a-z0-9]+", "-", text)
     return text.strip("-")
@@ -111,16 +117,25 @@ def main():
         jd_src = Path(args.jd)
         jds_dir = REPO_ROOT / "jds"
         jds_dir.mkdir(parents=True, exist_ok=True)
-        jd_dst = jds_dir / f"{slug}.txt"
 
-        if jd_src.resolve() != jd_dst.resolve() and jd_src.exists():
-            jd_dst.write_text(jd_src.read_text(encoding="utf-8"), encoding="utf-8")
+        # If the JD already lives in jds/, reuse it in place. Copying it to a
+        # second jds/<company>-<role>.txt produced two byte-identical JDs
+        # whenever the user's slug differed from <company>-<role> (finding C1).
+        src_in_jds = jd_src.exists() and jds_dir.resolve() in jd_src.resolve().parents
+        if src_in_jds:
+            jd_path_to_use = jd_src
+            jd_ref_path = jd_src.resolve().relative_to(REPO_ROOT.resolve())
+        else:
+            jd_dst = jds_dir / f"{slug}.txt"
+            if jd_src.exists() and jd_src.resolve() != jd_dst.resolve():
+                jd_dst.write_text(jd_src.read_text(encoding="utf-8"), encoding="utf-8")
+            jd_path_to_use = jd_dst if jd_dst.exists() else jd_src
+            jd_ref_path = Path("jds") / f"{slug}.txt"
 
-        jd_path_to_use = jd_dst if jd_dst.exists() else jd_src
         cv_path = REPO_ROOT / args.cv
 
         if jd_path_to_use.exists() and cv_path.exists():
-            jd_file_ref = f"jds/{slug}.txt"
+            jd_file_ref = jd_ref_path.as_posix()
             buf = io.StringIO()
             with contextlib.redirect_stdout(buf):
                 try:
@@ -133,7 +148,8 @@ def main():
             gap_section = f"```\n{report}\n```"
         else:
             print(
-                f"Warning: JD file not found at {jd_path_to_use} — skipping gap analysis"
+                f"Warning: JD file not found at {jd_path_to_use} — skipping gap analysis",
+                file=sys.stderr,
             )
 
     location = "Remote" if args.remote else args.location
