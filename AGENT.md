@@ -454,9 +454,12 @@ anything off-target. It is a CV view of the same skills, not a second source of 
 **Long careers (more than ~5–6 roles).** A full reverse-chronological listing with 3–5
 bullets each will blow past the 2-page cap (`generate_cv.py` warns above 2 pages). Give the
 **recent 3–4 roles** full bullets and condense the older ones into a single
-`### Earlier Experience` block — one line per role (`Title — Company — years`), no bullets.
-Never fabricate bullets to pad a thin old role, and never break reverse-chronological order
-to make it fit: **compress, don't reorder.**
+`### Earlier Experience` block — one line per role
+(`Title — Company — MMM YYYY – MMM YYYY`, e.g. `Staff Engineer — Acme — Jan 2008 – Dec 2012`),
+no bullets. Keep the same `MMM YYYY` date format as the recent roles — `generate_cv.py`
+warns on year-only ranges anywhere in the Experience block, so don't drop to bare years
+here. Never fabricate bullets to pad a thin old role, and never break reverse-chronological
+order to make it fit: **compress, don't reorder.**
 
 **5b. Tailored CV (`cv/versions/<slug>.md`)**
 
