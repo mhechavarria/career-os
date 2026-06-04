@@ -54,6 +54,11 @@ Career OS trades in evidence, not adjectives — so:
   `- [ ] TODO: number?` so it stays visibly unfinished.
 - Never invent a metric to "complete" an imported bullet. If the user can't quantify
   it, it stays a TODO or gets cut.
+- The same rule covers **quantitative self-claims** in the summary, headline, or "About" —
+  "8+ years of experience", "scaled to millions of users", "improved performance 10x". These
+  are unverified marketing, not facts (and an old CV's tenure figure is usually stale). Check
+  them against the role dates and confirm in the interview, or leave them out — never copy a
+  tenure figure or a scale claim straight into `cv/master.md`'s summary or any output prose.
 
 ### How the user provides sources
 
@@ -313,6 +318,12 @@ Sections:
 ## STAR Story Seeds
 ```
 
+For a **management or lead role**, the IC Impact Categories often won't fit. Supplement or
+replace them with a `## Leadership & Management` section covering team growth (e.g. 3 → 8
+engineers), hiring, delivery (shipped v1 on schedule), and people/process outcomes. Hold it
+to the same honesty bar as any IC bullet — real team sizes and outcomes only, never
+latency/throughput metrics invented for work that was managerial.
+
 **`impacts/impact-library.md`** — the curated, cross-company digest. Extract the 2–3 strongest bullets from the role and add them under the relevant **theme heading**. The aggregate file is organized by these section headings (use only those that apply):
 
 ```
@@ -324,6 +335,10 @@ Sections:
 ## AI-Augmented Engineering
 ## Cost Optimization
 ```
+
+Unquantified achievements that aren't CV-ready yet can be parked under an optional
+`## Open (unquantified)` holding section — kept out of the CV — so they stay visible for
+later quantification instead of being lost or, worse, padded with a made-up number.
 
 In the aggregate file each bullet carries only a `[company:: CompanyName]` tag, so the source stays traceable while the digest stays scannable. For many roles you can also split the detail into per-company files (`impacts/impact-library-<company>.md`, adding the `company`/`period` frontmatter below) and link them from the aggregate file's Company Libraries section. The **per-company** bullets carry the full inline-field set:
 
@@ -355,6 +370,9 @@ Bullet format (per-company files carry all three inline fields; the aggregate ca
 the user can give, keep it as a `- [ ] TODO: number?` rather than inventing one, and leave
 it out of the CV until it's quantified — an honest gap always beats a made-up number. This
 is the same "seed, don't autocomplete" rule from Phase 0, applied to the whole interview.
+Likewise, prefer the user's own before/after wording ("deploys went from weekly to daily")
+over a derived multiplier ("~5× faster") whenever the multiplier needs an assumption you'd
+have to defend — the literal delta is both more honest and more convincing.
 
 ---
 
@@ -433,13 +451,23 @@ condensed, recruiter-facing selection drawn from the fuller `profile/skills.md` 
 promote current/relevant skills to **Core**, fold older ones into **Background**, and drop
 anything off-target. It is a CV view of the same skills, not a second source of truth.
 
+**Long careers (more than ~5–6 roles).** A full reverse-chronological listing with 3–5
+bullets each will blow past the 2-page cap (`generate_cv.py` warns above 2 pages). Give the
+**recent 3–4 roles** full bullets and condense the older ones into a single
+`### Earlier Experience` block — one line per role (`Title — Company — years`), no bullets.
+Never fabricate bullets to pad a thin old role, and never break reverse-chronological order
+to make it fit: **compress, don't reorder.**
+
 **5b. Tailored CV (`cv/versions/<slug>.md`)**
 
 Ask: "Is there a specific role or company you're targeting right now?"
 
 If yes:
 - Get the job description or key requirements
-- Reorder bullets to surface most-relevant experience first
+- Within each role, surface the most JD-relevant bullets first and trim the rest — but keep
+  the **roles themselves in reverse-chronological order**. Tailoring changes which bullets
+  show and how the summary reads; it never reorders roles out of chronology (an out-of-order
+  work history reads as an error to a recruiter and an ATS parser alike)
 - Rewrite the summary to match the role's framing
 - Narrow the headline to the role's language
 - Drop roles or bullets that don't serve the application
