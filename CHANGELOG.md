@@ -9,6 +9,8 @@ mean for a template repo.
 
 ## [Unreleased]
 
+## [1.3.0] — 2026-06-04
+
 ### Changed
 - `AGENT.md` Phase 0 now treats **quantitative self-claims** imported from an old CV /
   LinkedIn (years of experience, "millions of users", "10x faster") as unverified — confirm
