@@ -15,14 +15,18 @@ It never pushes and never creates the GitHub Release — ``release.yml`` does th
 from the CHANGELOG when the tag is pushed.
 
 Usage:
-    python3 maintainers/prepare_release.py --version 1.4.0
-    python3 maintainers/prepare_release.py --bump minor
+    # phase 1 — on a release branch: rewrite CHANGELOG.md and commit
     python3 maintainers/prepare_release.py --bump minor --commit
-    python3 maintainers/prepare_release.py --bump minor --commit --tag
+    #   ...push, open a PR, and squash-merge it...
+    # phase 2 — on an up-to-date main: tag the merged release commit
+    python3 maintainers/prepare_release.py --version 1.4.0 --tag
 
-By default it only rewrites CHANGELOG.md and prints the remaining git steps.
-``--commit`` makes the release commit; ``--tag`` also creates the annotated tag
-on that commit (and requires ``--commit``). Neither pushes.
+By default it only rewrites CHANGELOG.md and prints the remaining steps.
+``--commit`` and ``--tag`` are deliberately *separate phases*: under a
+squash-merge the branch commit's SHA changes when the PR lands, so a tag made
+on the branch would not be an ancestor of main (``release.yml`` would reject
+it). ``--commit`` makes the release commit on the current branch; ``--tag``
+runs later, on main, and tags the already-merged commit. Neither pushes.
 """
 
 import argparse
@@ -201,23 +205,25 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--date", default=None, help="release date YYYY-MM-DD (default: today)"
     )
-    parser.add_argument(
+    # --commit and --tag are separate release phases — never both at once.
+    phase = parser.add_mutually_exclusive_group()
+    phase.add_argument(
         "--commit",
         action="store_true",
-        help="make the release commit after rewriting the CHANGELOG",
+        help="phase 1: make the release commit on the current branch",
     )
-    parser.add_argument(
+    phase.add_argument(
         "--tag",
         action="store_true",
-        help="also create the annotated tag (requires --commit; no push)",
+        help="phase 2: tag the merged release commit on main (after the PR merges)",
     )
     return parser.parse_args(argv)
 
 
-def print_next_steps(version: str, args: argparse.Namespace) -> None:
+def print_prepare_steps(version: str, commit: bool) -> None:
     print("\nNext steps:")
     step = 1
-    if not args.commit:
+    if not commit:
         print(f"  {step}. Review:  git diff CHANGELOG.md")
         step += 1
         print(
@@ -225,65 +231,89 @@ def print_next_steps(version: str, args: argparse.Namespace) -> None:
             f'git commit -m "release: v{version} changelog"'
         )
         step += 1
-    if not args.tag:
-        print(f"  {step}. Tag:     git tag -a v{version} -m v{version}")
-        step += 1
-    print(f"  {step}. Push:    git push origin HEAD && git push origin v{version}")
+    print(f"  {step}. PR:      push the release branch, open a PR, and merge it")
+    step += 1
+    print(
+        f"  {step}. Tag:     once merged, from an up-to-date main run "
+        f"`prepare_release.py --version {version} --tag`"
+    )
+    print(
+        "\nThe --tag step tags the merged commit on main; pushing that tag makes "
+        "release.yml publish the Release — do NOT create it in the UI."
+    )
+
+
+def prepare(version: str, latest: str | None, date: str | None, commit: bool) -> int:
+    """Phase 1: rewrite CHANGELOG.md (and optionally commit) on a release branch."""
+    assert_increasing(version, latest)
+    if tag_exists(version):
+        raise ReleaseError(f"tag v{version} already exists")
+    text = CHANGELOG.read_text(encoding="utf-8")
+    if not has_release_notes(unreleased_body(text)):
+        raise ReleaseError("the [Unreleased] section is empty — nothing to release")
+    if working_tree_dirty("CHANGELOG.md"):
+        raise ReleaseError(
+            "CHANGELOG.md has uncommitted changes — commit or stash first"
+        )
+    if commit and working_tree_dirty():
+        raise ReleaseError(
+            "working tree is not clean — the release commit must contain "
+            "only the CHANGELOG change"
+        )
+
+    resolved_date = date or dt.date.today().isoformat()
+    CHANGELOG.write_text(
+        rewrite_changelog(text, version, resolved_date), encoding="utf-8"
+    )
+    print(f"✓ CHANGELOG.md: [Unreleased] → [{version}] — {resolved_date}")
+
+    if commit:
+        git("add", "CHANGELOG.md")
+        git("commit", "-m", f"release: v{version} changelog")
+        print(f"✓ committed: release: v{version} changelog")
+
+    print_prepare_steps(version, commit)
+    return 0
+
+
+def tag_release(version: str, latest: str | None) -> int:
+    """Phase 2: tag the merged release commit on main (run after the PR merges)."""
+    assert_increasing(version, latest)
+    if tag_exists(version):
+        raise ReleaseError(f"tag v{version} already exists")
+    branch = current_branch()
+    if branch != "main":
+        raise ReleaseError(
+            f"on branch '{branch}', not 'main' — the tag must sit on main, which "
+            "release.yml requires (it rejects tags that aren't ancestors of main)"
+        )
+    if working_tree_dirty():
+        raise ReleaseError("working tree is not clean — sync main before tagging")
+    text = CHANGELOG.read_text(encoding="utf-8")
+    if not re.search(rf"^## \[{re.escape(version)}\]", text, re.M):
+        raise ReleaseError(
+            f"CHANGELOG.md has no [{version}] section yet — run --commit on a "
+            "release branch and merge that PR before tagging"
+        )
+
+    git("tag", "-a", f"v{version}", "-m", f"v{version}")
+    print(f"✓ tagged: v{version} on main (local only — not pushed)")
+    print(f"\nNext step:\n  Push:  git push origin v{version}")
     print(
         "\nrelease.yml publishes the GitHub Release from the CHANGELOG when the "
         "tag lands — do NOT create the release in the UI."
     )
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
     args = parse_args(argv)
     try:
-        if args.tag and not args.commit:
-            raise ReleaseError(
-                "--tag requires --commit (the tag must sit on the release commit)"
-            )
-
         latest = latest_tag()
         version = resolve_version(latest, args.version, args.bump)
-        date = args.date or dt.date.today().isoformat()
-        text = CHANGELOG.read_text(encoding="utf-8")
-
-        # Guards — all evaluated before anything is written (release.yml, early).
-        assert_increasing(version, latest)
-        if tag_exists(version):
-            raise ReleaseError(f"tag v{version} already exists")
-        if not has_release_notes(unreleased_body(text)):
-            raise ReleaseError("the [Unreleased] section is empty — nothing to release")
-        if working_tree_dirty("CHANGELOG.md"):
-            raise ReleaseError(
-                "CHANGELOG.md has uncommitted changes — commit or stash first"
-            )
-        if args.commit and working_tree_dirty():
-            raise ReleaseError(
-                "working tree is not clean — the release commit must contain "
-                "only the CHANGELOG change"
-            )
-
-        CHANGELOG.write_text(rewrite_changelog(text, version, date), encoding="utf-8")
-        print(f"✓ CHANGELOG.md: [Unreleased] → [{version}] — {date}")
-
-        if args.commit:
-            branch = current_branch()
-            if branch != "main":
-                print(
-                    f"  ! on branch '{branch}', not 'main' — release.yml only "
-                    "publishes tags that are ancestors of main",
-                    file=sys.stderr,
-                )
-            git("add", "CHANGELOG.md")
-            git("commit", "-m", f"release: v{version} changelog")
-            print(f"✓ committed: release: v{version} changelog")
         if args.tag:
-            git("tag", "-a", f"v{version}", "-m", f"v{version}")
-            print(f"✓ tagged: v{version} (local only — not pushed)")
-
-        print_next_steps(version, args)
-        return 0
+            return tag_release(version, latest)
+        return prepare(version, latest, args.date, args.commit)
     except ReleaseError as err:
         print(f"error: {err}", file=sys.stderr)
         return 1
