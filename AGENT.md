@@ -71,7 +71,6 @@ chat. Format notes:
   `sources/` directly. Otherwise ask the user to paste the text or export the CV to
   markdown.
 - **DOCX / other binaries** — ask the user to export to PDF or paste the text.
-  *(Automated DOCX/PDF extraction is a planned follow-up script.)*
 - **LinkedIn** — the cleanest source is the user's own data export
   (*Settings → Get a copy of your data*) or a copy-paste of the About + Experience
   sections. Do not scrape a live profile URL.

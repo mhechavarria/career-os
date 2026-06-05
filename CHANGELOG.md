@@ -9,6 +9,12 @@ mean for a template repo.
 
 ## [Unreleased]
 
+### Changed
+- `AGENT.md` Phase 0 no longer references a "planned" automated DOCX/PDF extraction
+  script. After evaluation it was decided against: the agent reads PDFs directly and
+  DOCX sources should be exported to PDF or pasted, so the doc-first intake needs no
+  extra tooling — the dangling promise is removed rather than left unbuilt.
+
 ## [1.4.0] — 2026-06-05
 
 ### Changed
