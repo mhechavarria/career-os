@@ -9,6 +9,24 @@ mean for a template repo.
 
 ## [Unreleased]
 
+### Changed
+- `AGENT.md` Phase 3 experience schema adds a dedicated **`employer:`** frontmatter field for
+  contractor / agency placements, so the staffing agency is recorded there instead of being
+  overloaded into `role:` (the job-title field). `company:` stays the host/client, `role:` the
+  title; `employer:` is optional and omitted for direct employment.
+- `AGENT.md` Phase 3 documents a **contract-to-hire at the same host** pattern: keep one
+  experience file spanning the whole tenure with both phases dated in Context, rather than
+  splitting a continuous tenure into two jobs or laundering the contract phase into apparent
+  direct employment.
+- `AGENT.md` Phase 3 gives a **non-engineering prior career** (teaching, military, a trade) a
+  home in the IC-centric experience schema via a `Prior-Career Impact` section that keeps
+  outcomes in that domain's own terms — never relabeled as engineering metrics or promoted into
+  the engineering impact library.
+- `AGENT.md` Phase 5 documents an **employment-gap** pattern: let a multi-year break stay
+  visible through honest non-overlapping dates (never a fabricated "Freelance" job or a
+  stretched end date); optionally explain it in `profile/` or as a clearly-labeled `Career
+  Break` line that is never dressed up as employment.
+
 ## [1.3.0] — 2026-06-04
 
 ### Changed
