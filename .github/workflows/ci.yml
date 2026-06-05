@@ -20,9 +20,9 @@ jobs:
       - name: Install dev dependencies
         run: pip install -r requirements-dev.txt
       - name: Ruff lint
-        run: ruff check scripts/ tests/
+        run: ruff check scripts/ maintainers/ tests/
       - name: Ruff format check
-        run: ruff format --check scripts/ tests/
+        run: ruff format --check scripts/ maintainers/ tests/
       - name: Markdown lint
         run: pymarkdown --config .pymarkdown.json scan .
 
@@ -40,7 +40,7 @@ jobs:
       - name: Install dev dependencies
         run: pip install -r requirements-dev.txt
       - name: Syntax smoke test
-        run: python -c "import ast, glob; [ast.parse(open(f).read()) for f in glob.glob('scripts/*.py')]"
+        run: python -c "import ast, glob; [ast.parse(open(f).read()) for f in glob.glob('scripts/*.py') + glob.glob('maintainers/*.py')]"
       - name: Run unit tests
         run: pytest -q
 
