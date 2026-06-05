@@ -313,6 +313,16 @@ TECH_PHRASES = [
     "sequelize",
     "celery",
     "airflow",
+    # Common language / tool names that are bare lowercase words the CamelCase
+    # regex misses. Unlike "go"/"rust" (see CAPITALIZED_LANG_TOKENS) these are
+    # safe to match case-insensitively: they essentially never appear as ordinary
+    # English in a software JD or CV, so no capitalization guard is needed.
+    # "java" won't match "javascript" (word boundary), and "docker compose" is
+    # still counted as its own phrase first (longest-match blanking).
+    "python",
+    "java",
+    "ruby",
+    "docker",
 ]
 
 # Variant spellings folded into a single canonical term, so a JD and CV that
