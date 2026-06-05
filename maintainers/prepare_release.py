@@ -88,8 +88,14 @@ def assert_increasing(version: str, latest: str | None) -> None:
 
 
 def unreleased_body(text: str) -> str:
-    """Return the raw text between [Unreleased] and the next '## [' section."""
-    m = re.search(r"^## \[Unreleased\]\n(.*?)(?=^## \[)", text, re.S | re.M)
+    """Return the notes under [Unreleased], stopping at the next version
+    section, the link-reference block, or EOF — so a first release whose
+    CHANGELOG has no prior section is still detected as having notes."""
+    m = re.search(
+        r"^## \[Unreleased\]\n(.*?)(?=^## \[|^\[[^\]]+\]:|\Z)",
+        text,
+        re.S | re.M,
+    )
     return m.group(1) if m else ""
 
 
