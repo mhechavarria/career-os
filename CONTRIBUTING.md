@@ -69,14 +69,26 @@ repo that means:
 
 ## Releasing (maintainers)
 
-1. Move entries from `[Unreleased]` into a new `[X.Y.Z]` section in
-   `CHANGELOG.md` (with the date) and commit.
-2. Tag and push:
+From a clean `main`, let [`maintainers/prepare_release.py`](maintainers/README.md)
+do the CHANGELOG surgery and run the release guards locally:
 
-   ```bash
-   git tag vX.Y.Z
-   git push origin vX.Y.Z
-   ```
+```bash
+# rewrite CHANGELOG.md, make the release commit, and create the tag (no push):
+python3 maintainers/prepare_release.py --bump minor --commit --tag
+```
 
-3. The `release.yml` workflow publishes a GitHub Release from that version's
-   changelog section.
+Use `--bump major|minor|patch` (computed from the latest tag) or `--version X.Y.Z`.
+Drop `--commit`/`--tag` to only rewrite the CHANGELOG and review the diff first.
+The script moves `[Unreleased]` into a dated `[X.Y.Z]` section, refreshes the
+compare links, and refuses to proceed on a dirty tree, a duplicate/older version,
+or an empty `[Unreleased]`.
+
+Then push the branch and the tag:
+
+```bash
+git push origin HEAD
+git push origin vX.Y.Z
+```
+
+The `release.yml` workflow publishes the GitHub Release from that version's
+changelog section — **do not** create the Release in the GitHub UI yourself.
