@@ -29,6 +29,14 @@ SAMPLE = """\
 [1.3.0]: https://github.com/acme/career-os/compare/v1.2.0...v1.3.0
 """
 
+# SAMPLE after a v1.4.0 cut has been prepared and merged to main — the shape the
+# phase-2 `--tag` step sees (CHANGELOG already carries the [1.4.0] section).
+CUT = SAMPLE.replace(
+    "## [Unreleased]\n",
+    "## [Unreleased]\n\n## [1.4.0] — 2026-06-05\n",
+    1,
+)
+
 
 # --- version helpers --------------------------------------------------------
 
@@ -201,7 +209,49 @@ def test_main_blocks_empty_unreleased(tmp_path, monkeypatch, capsys):
     assert "nothing to release" in capsys.readouterr().err
 
 
-def test_main_blocks_tag_without_commit(tmp_path, monkeypatch, capsys):
+def test_main_commit_phase_makes_release_commit(tmp_path, monkeypatch, capsys):
+    changelog = tmp_path / "CHANGELOG.md"
+    changelog.write_text(SAMPLE, encoding="utf-8")
+    monkeypatch.setattr(pr, "CHANGELOG", changelog)
+    _stub_git(monkeypatch)
+    calls = []
+    monkeypatch.setattr(pr, "git", lambda *a, **k: calls.append(a) or "")
+
+    rc = pr.main(["--bump", "minor", "--date", "2026-06-05", "--commit"])
+
+    assert rc == 0
+    assert "## [1.4.0] — 2026-06-05" in changelog.read_text(encoding="utf-8")
+    assert ("add", "CHANGELOG.md") in calls
+    assert ("commit", "-m", "release: v1.4.0 changelog") in calls
+
+
+def test_main_commit_and_tag_are_mutually_exclusive():
+    # argparse rejects the combination before any work happens
+    with pytest.raises(SystemExit):
+        pr.main(["--version", "1.4.0", "--commit", "--tag"])
+
+
+# --- phase 2: tagging the merged release commit on main ---------------------
+
+
+def test_main_tag_phase_tags_merged_release(tmp_path, monkeypatch, capsys):
+    changelog = tmp_path / "CHANGELOG.md"
+    changelog.write_text(CUT, encoding="utf-8")
+    monkeypatch.setattr(pr, "CHANGELOG", changelog)
+    _stub_git(monkeypatch)  # on main, clean, latest v1.3.0, tag absent
+    calls = []
+    monkeypatch.setattr(pr, "git", lambda *a, **k: calls.append(a) or "")
+
+    rc = pr.main(["--version", "1.4.0", "--tag"])
+
+    assert rc == 0
+    assert ("tag", "-a", "v1.4.0", "-m", "v1.4.0") in calls
+    assert changelog.read_text(encoding="utf-8") == CUT  # CHANGELOG untouched
+    assert "git push origin v1.4.0" in capsys.readouterr().out
+
+
+def test_main_tag_phase_requires_cut_changelog(tmp_path, monkeypatch, capsys):
+    # SAMPLE still has the notes under [Unreleased] — the cut isn't merged yet
     changelog = tmp_path / "CHANGELOG.md"
     changelog.write_text(SAMPLE, encoding="utf-8")
     monkeypatch.setattr(pr, "CHANGELOG", changelog)
@@ -210,4 +260,17 @@ def test_main_blocks_tag_without_commit(tmp_path, monkeypatch, capsys):
     rc = pr.main(["--version", "1.4.0", "--tag"])
 
     assert rc == 1
-    assert "--tag requires --commit" in capsys.readouterr().err
+    assert "no [1.4.0] section yet" in capsys.readouterr().err
+
+
+def test_main_tag_phase_must_run_on_main(tmp_path, monkeypatch, capsys):
+    changelog = tmp_path / "CHANGELOG.md"
+    changelog.write_text(CUT, encoding="utf-8")
+    monkeypatch.setattr(pr, "CHANGELOG", changelog)
+    _stub_git(monkeypatch)
+    monkeypatch.setattr(pr, "current_branch", lambda: "release/v1.4.0")
+
+    rc = pr.main(["--version", "1.4.0", "--tag"])
+
+    assert rc == 1
+    assert "not 'main'" in capsys.readouterr().err

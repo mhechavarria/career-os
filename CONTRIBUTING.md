@@ -69,26 +69,34 @@ repo that means:
 
 ## Releasing (maintainers)
 
-From a clean `main`, let [`maintainers/prepare_release.py`](maintainers/README.md)
-do the CHANGELOG surgery and run the release guards locally:
+[`maintainers/prepare_release.py`](maintainers/README.md) does the CHANGELOG
+surgery and runs the release guards locally. Because the repo squash-merges,
+releasing has **two phases**: the release commit goes in via a PR, and the tag
+is created on `main` only *after* that PR merges (a tag made on the branch would
+point at a soon-to-be-squashed commit, which `release.yml` rejects).
+
+**Phase 1 — on a release branch**, rewrite the CHANGELOG and commit:
 
 ```bash
-# rewrite CHANGELOG.md, make the release commit, and create the tag (no push):
-python3 maintainers/prepare_release.py --bump minor --commit --tag
+git switch -c release/vX.Y.Z origin/main
+python3 maintainers/prepare_release.py --bump minor --commit
+git push -u origin release/vX.Y.Z
 ```
 
-Use `--bump major|minor|patch` (computed from the latest tag) or `--version X.Y.Z`.
-Drop `--commit`/`--tag` to only rewrite the CHANGELOG and review the diff first.
-The script moves `[Unreleased]` into a dated `[X.Y.Z]` section, refreshes the
-compare links, and refuses to proceed on a dirty tree, a duplicate/older version,
-or an empty `[Unreleased]`.
+Use `--bump major|minor|patch` (computed from the latest tag) or `--version X.Y.Z`;
+drop `--commit` to only rewrite the CHANGELOG and review the diff first. The script
+moves `[Unreleased]` into a dated `[X.Y.Z]` section, refreshes the compare links,
+and refuses to proceed on a dirty tree, a duplicate/older version, or an empty
+`[Unreleased]`. Open a PR and squash-merge it.
 
-Then push the branch and the tag:
+**Phase 2 — once merged, from an up-to-date `main`**, tag and push:
 
 ```bash
-git push origin HEAD
+git switch main && git pull
+python3 maintainers/prepare_release.py --version X.Y.Z --tag
 git push origin vX.Y.Z
 ```
 
-The `release.yml` workflow publishes the GitHub Release from that version's
-changelog section — **do not** create the Release in the GitHub UI yourself.
+The `--tag` step only runs on a clean `main` whose CHANGELOG already carries the
+`[X.Y.Z]` section. The `release.yml` workflow then publishes the GitHub Release
+from that section — **do not** create the Release in the GitHub UI yourself.
