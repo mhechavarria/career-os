@@ -154,6 +154,41 @@ def test_count_in_text_go_ignores_english_prose_in_cv():
     assert jd_gap.count_in_text("go", "Built backend services in Go using golang") == 2
 
 
+# --- common bare-word language / tool names ---------------------------------
+# python / java / ruby / docker are lowercase words the CamelCase regex misses.
+# Unlike go/rust they need no capitalization guard — they don't occur as ordinary
+# English in a software JD/CV, so case-insensitive whole-word matching is safe.
+
+
+def test_extract_detects_common_language_names():
+    counts = jd_gap.extract_tech_tokens(
+        "Backend in Python and Java; tooling scripts in Ruby"
+    )
+    assert counts["python"] == 1
+    assert counts["java"] == 1
+    assert counts["ruby"] == 1
+
+
+def test_extract_java_does_not_match_javascript():
+    # word boundary: "java" must not be found inside "JavaScript"
+    counts = jd_gap.extract_tech_tokens("Frontend in JavaScript")
+    assert counts.get("java", 0) == 0
+
+
+def test_extract_docker_counted_separately_from_compose():
+    # "docker compose" is matched (and blanked) first, then bare "docker" once
+    counts = jd_gap.extract_tech_tokens("We run Docker locally via docker compose")
+    assert counts["docker compose"] == 1
+    assert counts["docker"] == 1
+
+
+def test_count_in_text_matches_bare_language_names():
+    assert jd_gap.count_in_text("python", "Primarily a Python shop") == 1
+    assert jd_gap.count_in_text("docker", "Everything ships in Docker") == 1
+    # absence is a real gap (zero), not a false hit
+    assert jd_gap.count_in_text("ruby", "We use Go and Python") == 0
+
+
 # --- CLI: graceful missing-file handling ------------------------------------
 
 

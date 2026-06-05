@@ -26,6 +26,11 @@ mean for a template repo.
   visible through honest non-overlapping dates (never a fabricated "Freelance" job or a
   stretched end date); optionally explain it in `profile/` or as a clearly-labeled `Career
   Break` line that is never dressed up as employment.
+- `jd_gap.py` now detects the bare language / tool names **`python`**, **`java`**, **`ruby`**,
+  and **`docker`**, which the CamelCase token regex missed — so a JD requiring any of them is
+  no longer invisible in the gap report. Unlike `go`/`rust` these need no capitalization guard
+  (they don't occur as ordinary English in a software JD/CV); `java` won't match `javascript`
+  (word boundary) and `docker compose` is still counted as its own phrase first.
 
 ## [1.3.0] — 2026-06-04
 
