@@ -1,4 +1,4 @@
 # Career OS framework dependencies (CV generation + gap analysis + tooling)
-weasyprint>=68.1
+weasyprint>=69.0
 markdown2>=2.5.5
 pyyaml>=6.0.3
