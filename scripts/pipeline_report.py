@@ -25,7 +25,11 @@ STAGES_ORDER = [
     "take-home",
     "onsite",
     "offer",
+    "placed",
 ]
+# Negative terminal stages (used to exclude non-progress outcomes from screen
+# counts). The positive terminal `placed` is intentionally NOT here — a placed
+# application advanced all the way through, so it counts as progress.
 CLOSED_STAGES = {"rejected", "ghosted", "withdrawn"}
 
 SECTION_MAP = {
@@ -116,7 +120,9 @@ def main():
     stage_counts: Counter = Counter(str(a.get("stage", "applied")) for a in apps)
     screened = sum(stage_counts.get(s, 0) for s in STAGES_ORDER[1:])
     technical = sum(stage_counts.get(s, 0) for s in STAGES_ORDER[2:])
-    offers = stage_counts.get("offer", 0)
+    placed = stage_counts.get("placed", 0)
+    # A placement implies an offer, so count it toward offers too.
+    offers = stage_counts.get("offer", 0) + placed
 
     # CV version performance
     cv_perf: dict = {}
@@ -146,6 +152,7 @@ def main():
         f"  Technical round:  {technical:3d}  {pct(technical, screened) if screened else ''}"
     )
     print(f"  Offer:            {offers:3d}  {pct(offers, total)}")
+    print(f"  Placed:           {placed:3d}  {pct(placed, total)}")
 
     print("\n=== CV VERSION PERFORMANCE ===")
     for cv, data in sorted(cv_perf.items(), key=lambda x: -x[1]["apps"]):
