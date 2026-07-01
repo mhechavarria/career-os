@@ -712,7 +712,12 @@ adds almost no ritual.
 `Feedback Loop` sections (Phase 6, step 6). Do a short retro on **every** terminal outcome,
 not just rejections. A **win** — an offer or a placement — is the most valuable retro of all:
 it tells you what actually worked, and it's the one people skip. In 2–3 lines, capture what
-predicted this result and what you'd do or qualify differently next time.
+predicted this result and what you'd do or qualify differently next time. (The pipeline
+dashboard's Closed view tracks only the negative terminals — `rejected` / `ghosted` /
+`withdrawn`; `offer` and `placed` deliberately count as *progress* in `pipeline_report.py`,
+so a win stays in the Active view. That's intentional — this retro is **outcome-level, not
+dashboard-level**: do it whenever an application truly ends, win or lose, regardless of which
+table it sits in.)
 
 **Distill (occasional, optional).** When the same lesson shows up across several retros,
 promote it into `lessons.md` as a durable, generalized principle. This is not a mandated
