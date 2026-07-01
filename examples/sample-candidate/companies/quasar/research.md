@@ -83,5 +83,5 @@ tags: [distributed-systems, event-sourcing, kafka, staff, remote]
 
 - JD: `jds/staff-distributed-systems.txt`
 - Tailored CV: `cv/versions/staff-distributed-systems.md`
-- Application: `applications/quasar-2026-06.md` _(create when you apply)_
+- Application: `applications/quasar-staff-backend-engineer-2026-06.md` _(the `<company>-<role>-YYYY-MM` name `new_application.py` generates; create when you apply)_
 - Site / careers: _to add_
