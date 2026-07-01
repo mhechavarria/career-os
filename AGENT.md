@@ -634,7 +634,8 @@ what they must ask — **not** when every section is full.
 target? If so, also create an `architecture.md` deep-dive; for a standard role, skip it.
 
 Keep `research.md`'s `status` current as things move, and cross-link the application file
-(`applications/<slug>-YYYY-MM.md`) and the JD (`jds/<slug>.txt`) so the loop from research →
+(`applications/<company>-<role>-YYYY-MM.md`, as `new_application.py` names it) and the JD
+(`jds/<slug>.txt`) so the loop from research →
 application → CV stays connected. Research can begin **before** applying — a strong "why this
 company" is worth writing early. When interviews are scheduled, carry this into
 `interview-prep.md` (template in `templates/`).

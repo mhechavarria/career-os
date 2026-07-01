@@ -88,6 +88,6 @@ tags: []
 
 - JD: `jds/<slug>.txt`
 - Tailored CV: `cv/versions/<slug>.md`
-- Application: `applications/<slug>-YYYY-MM.md`
+- Application: `applications/<company>-<role>-YYYY-MM.md`
 - Site:
 - Careers:

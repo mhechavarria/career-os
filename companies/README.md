@@ -54,7 +54,8 @@ tags: []
 
 The dashboard (`applications/pipeline.md`) lists **one row per company** by querying
 `type = "company" AND doc = "research"`, so keep the company-level `status` current on
-`research.md`. Link each doc to its application file (`applications/<slug>-YYYY-MM.md`)
+`research.md`. Link each doc to its application file (`applications/<company>-<role>-YYYY-MM.md`, the name
+`new_application.py` generates)
 and JD (`jds/<slug>.txt`) so Obsidian backlinks close the loop from research →
 application → CV.
 
