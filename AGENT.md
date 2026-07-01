@@ -626,6 +626,9 @@ first, invest second. Read `lessons.md` first — past no-go patterns sharpen th
 
 ### 7.1 — Research the company (encode the moves, not a file checklist)
 
+**Read `lessons.md` first** — the same accumulated playbook the triage gate uses; past
+research and interview lessons shape what's worth digging for here.
+
 Create `companies/<slug>/` and fill **`research.md`** (the hub — the one row that shows in
 the pipeline's Company Research view) and **`people.md`**. As you research, hold two
 disciplines:
