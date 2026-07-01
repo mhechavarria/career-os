@@ -2,7 +2,7 @@
 
 ## What You Are Doing
 
-You are a career documentation agent. Your job is to interview the user through conversation and produce a complete set of Career OS files from scratch — profile, experience, impact library, and CV.
+You are a career documentation agent. Your job is to interview the user through conversation and produce a complete set of Career OS files from scratch — profile, experience, impact library, and CV — then, once those exist, to run per-company research and interview prep and keep a retro loop that compounds what each application teaches.
 
 Read this file fully before starting. Then follow the phases in order. Do not dump all questions at once — ask one topic at a time, wait for the answer, then move on.
 
@@ -30,6 +30,7 @@ Read this file fully before starting. Then follow the phases in order. Do not du
 | `companies/<slug>/interview-prep.md` | Themes, STAR stories to lead with, questions to ask, prep checklist |
 | `companies/<slug>/people.md` | Founders, interviewers, and warm-intro paths |
 | `companies/<slug>/architecture.md` | Optional technical deep-dive (senior/staff or source-available targets) |
+| `lessons.md` | The Judgment Flywheel — durable, generalized lessons the loop reads and grows |
 
 ---
 
@@ -610,7 +611,7 @@ fit-check with the recruiter or from the JD:
 If a hard filter fails, **stop**: log a one-line no-go in the application/triage note and do
 **not** build research or a tailored CV. The single most expensive mistake in a job search is
 sinking a full research-and-CV build into a role the user was never eligible for — qualify
-first, invest second.
+first, invest second. Read `lessons.md` first — past no-go patterns sharpen this filter.
 
 ### 7.1 — Research the company (encode the moves, not a file checklist)
 
@@ -650,7 +651,8 @@ Interview Prep**.
 Once interviews are scheduled, fill `companies/<slug>/interview-prep.md` (from
 `interview-prep-template.md`). The job here is **selection, not invention** — the stories
 already exist in `impacts/` and `experience/`; interview prep decides which to lead with and
-how to land them.
+how to land them. Read `lessons.md` first for prior interview lessons — themes you've fumbled
+before, and which story formats have landed.
 
 **Read `people.md` first.** If you know who's on the loop, reorder which STAR story you lead
 with to match their background — this is the single highest-value prep move. An ex-SRE
@@ -689,6 +691,34 @@ about *whose data it was*.
 
 ---
 
+## Phase 9 — Retro & the Judgment Flywheel
+
+Judgment should compound, not reset with each application. Phase 9 is deliberately small — a
+retro loop that becomes paperwork gets abandoned — so it reuses what you already write and
+adds almost no ritual.
+
+**Capture.** When an application reaches a terminal outcome you already fill its `Outcome` /
+`Feedback Loop` sections (Phase 6, step 6). Do a short retro on **every** terminal outcome,
+not just rejections. A **win** — an offer or a placement — is the most valuable retro of all:
+it tells you what actually worked, and it's the one people skip. In 2–3 lines, capture what
+predicted this result and what you'd do or qualify differently next time.
+
+**Distill (occasional, optional).** When the same lesson shows up across several retros,
+promote it into `lessons.md` as a durable, generalized principle. This is not a mandated
+cadence — most retros stay in their application file; only the recurring ones graduate. The
+seeded `examples/sample-candidate/lessons.md` shows the shape and the altitude to aim for.
+
+**Apply.** Phases 7.0 (triage), 7 (research), and 8 (interview prep) read `lessons.md` first,
+so each run starts sharper than the last — that's the flywheel. A no-go pattern you named once
+saves the next wasted build; an interview lesson you distilled once changes how you prep.
+
+`pipeline_report.py` is a **separate, complementary** tool, not part of this loop: it
+aggregates outcomes across applications (a conversion funnel and recurring keyword gaps in
+your CVs). It has no `lessons.md` integration — use it for the quantitative view, and the
+retro / `lessons.md` loop for the judgment.
+
+---
+
 ## Output Checklist
 
 When the full intake is complete, these files should exist:
@@ -717,6 +747,9 @@ When the full intake is complete, these files should exist:
 - [ ] `companies/<slug>/people.md`
 - [ ] `companies/<slug>/interview-prep.md` (as interviews approach)
 - [ ] `companies/<slug>/architecture.md` (optional — senior/staff or deeply technical roles)
+
+**The Judgment Flywheel**
+- [ ] `lessons.md` — grows over runs as retros recur (starts empty)
 
 ---
 
