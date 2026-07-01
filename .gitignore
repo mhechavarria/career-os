@@ -25,3 +25,11 @@ venv/
 # Remove these two lines in your own private instance if you want it version-tracked.
 sources/*
 !sources/README.md
+
+# Company research — holds sensitive notes (interviewer names, comp figures).
+# Ignored by default; only the README and .gitkeep ship. Un-ignore your own company
+# folders in a private fork. Rooted (leading /) so it never catches the committed
+# worked example under examples/sample-candidate/companies/.
+/companies/*
+!/companies/.gitkeep
+!/companies/README.md

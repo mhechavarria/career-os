@@ -9,6 +9,20 @@ mean for a template repo.
 
 ## [Unreleased]
 
+### Added
+- **Company research folders** (`companies/<slug>/`) as a first-class part of the
+  framework. `AGENT.md` gains **Phase 7 — Company Research**: a triage gate that
+  hard-filters location / comp / role-type fit *before* any research or tailored-CV
+  investment (so a full build is never sunk into a role the user can't take), then a
+  research pass that separates confirmed facts from inferred ones, does "Why I Fit"
+  honestly (names gaps with adjacent experience instead of inflating), and stops when
+  the user can answer five questions about the company. Ships three coaching templates
+  (`company-research`, `interview-prep`, `people`) whose section headers teach the
+  quality bar inline, a `companies/README.md`, a rooted `.gitignore` entry (research is
+  gitignored by default — it can hold interviewer names and comp figures), a **Company
+  Research** view on `applications/pipeline.md`, and a fully worked example under
+  `examples/sample-candidate/companies/quasar/`.
+
 ### Changed
 - `AGENT.md` Phase 0 no longer references a "planned" automated DOCX/PDF extraction
   script. After evaluation it was decided against: the agent reads PDFs directly and

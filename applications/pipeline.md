@@ -32,3 +32,15 @@ FROM "applications"
 WHERE type = "application" AND contains(list("rejected", "ghosted", "withdrawn"), stage)
 SORT applied_date DESC
 ```
+
+## Company Research
+
+<!-- One row per company you're researching. Populates once you add
+companies/<slug>/research.md docs — an empty render here just means none yet. -->
+
+```dataview
+TABLE company, status, tags
+FROM "companies"
+WHERE type = "company" AND doc = "research"
+SORT company ASC
+```
