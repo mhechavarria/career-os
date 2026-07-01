@@ -22,6 +22,18 @@ mean for a template repo.
   gitignored by default — it can hold interviewer names and comp figures), a **Company
   Research** view on `applications/pipeline.md`, and a fully worked example under
   `examples/sample-candidate/companies/quasar/`.
+- **Interview prep** as `AGENT.md` **Phase 8 — Interview Prep**: map already-documented
+  STAR stories to the role's themes (select, don't invent — one vivid specific, name the
+  mechanism, land a company-tied punchline), read `people.md` first so a known interviewer
+  reorders which story leads, pre-write the honest answer to the role's weakest gap, and
+  handle the recruiter screen and any take-home as their own beats. Adds the in-interview
+  anonymization discipline (tell stories without naming real customers or internal IDs).
+- **Optional `architecture.md`** technical deep-dive — a seniority-gated template plus a
+  worked example (`examples/sample-candidate/companies/quasar/architecture.md`) that
+  doubles as system-design prep and models marking confirmed vs. inferred facts.
+- `AGENT.md` **Phase 5** gains an explicit **honest-framing** rule: never inflate scope
+  (used/extended ≠ built/owned), reframe grey-area work as the business outcome, and never
+  imply employment at a vendor whose product you only integrated.
 
 ### Changed
 - `AGENT.md` Phase 0 no longer references a "planned" automated DOCX/PDF extraction
