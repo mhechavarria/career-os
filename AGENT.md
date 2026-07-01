@@ -521,6 +521,13 @@ everywhere: a visible gap beats a fabricated job.
 
 Ask: "Is there a specific role or company you're targeting right now?"
 
+**If yes, fit-check before you invest.** Before tailoring a CV for a specific company, run
+the **Phase 7.0 triage gate** — location/eligibility, comp viability, role-type fit, values
+dealbreakers. If the role fails a hard filter, stop here: don't tailor a CV or open an
+application for a role the user can't take. The phases are numbered for the full-intake flow,
+but this fit-check belongs *before* any tailoring — the cheapest way to win is to not build
+for a role you can't accept.
+
 If yes:
 - Get the job description or key requirements
 - Within each role, surface the most JD-relevant bullets first and trim the rest — but keep
@@ -571,6 +578,10 @@ The PDF lands next to the markdown file: `cv/versions/<slug>.pdf`.
 ## Phase 6 — Application Tracking
 
 When the user is ready to apply to a role:
+
+> **Fit-check first.** If you haven't already run the **Phase 7.0** triage gate for this role
+> (location/eligibility, comp, role-type), do it now — don't open an application for a role
+> that fails a hard filter.
 
 1. Save the raw JD to `jds/<slug>.txt`. Reuse the **same `<slug>`** as the tailored CV
    (`cv/versions/<slug>.md`) so the application's `jd_file` and `cv_version` line up.
