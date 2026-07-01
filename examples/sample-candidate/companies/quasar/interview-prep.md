@@ -96,4 +96,4 @@ tags: [distributed-systems, event-sourcing, kafka, staff]
 - [ ] Re-read the JD; map each "what you'll do" bullet to one story above
 - [ ] Rehearse the event-sourced-risk-core design out loud
 - [ ] Read [[people]]; reorder STAR leads to the confirmed interviewer
-- [ ] Prepare the honest Ansible-gap answer (Terraform/Helm adjacent, would ramp fast)
+- [ ] Prepare the honest Helm/Ansible-gap answer (Terraform + GitHub Actions adjacent, would ramp fast)

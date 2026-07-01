@@ -64,11 +64,12 @@ tags: [distributed-systems, event-sourcing, kafka, staff, remote]
   footprint — Kafka mastery beyond just producing/consuming.
 - **Staff signals.** I authored the ADRs governing the Heliograph ingestion redesign and led
   the design review — matches their "author ADRs, lead design reviews" nice-to-have.
-- **Gap — Ansible.** I run config-as-code with **Terraform + Helm + GitHub Actions**, but I
-  have **not used Ansible in production**. Honest gap; the adjacent experience (declarative
-  IaC, promotion pipelines across 3 EKS regions) transfers, and I'd ramp on Ansible fast — I
-  won't claim it as owned. _(Also confirm Helm depth: I deploy on EKS but should be precise
-  about how much of the Helm charting I authored vs. inherited.)_
+- **Gap — Helm + Ansible.** My IaC is **Terraform + GitHub Actions** across 3 EKS regions
+  (documented); I have **not run Helm or Ansible in production**, and this role uses both.
+  Honest gap, not papered over — the adjacent declarative-IaC and multi-region promotion
+  experience transfers and I'd ramp fast, but I won't list Helm or Ansible as owned skills.
+  (The JD-gap check correctly flags Helm as missing from my CV — that's the honest signal,
+  not something to keyword-stuff away.)
 
 ## Open Questions
 
