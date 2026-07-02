@@ -50,6 +50,8 @@ lock-in, no export button to beg for.
 - On-demand, **ATS-compliant PDF CVs** generated from plain markdown.
 - Keyword **gap analysis** between any job description and your CV.
 - Application tracking with a pipeline dashboard.
+- Per-company **research folders** with a fit-check triage gate, feeding a research
+  view on the dashboard (gitignored by default — they can hold sensitive notes).
 - Fully portable: plain markdown + Git, no vendor lock-in.
 
 ## What this is not
@@ -96,6 +98,7 @@ good pace).
 | Brag doc | `impacts/brag-doc.md` |
 | CV assembly | `cv/master.md` + `cv/versions/<target>.md` |
 | Applications | `applications/<company>-YYYY-MM.md` + `jds/<slug>.txt` |
+| Company research *(optional)* | `companies/<slug>/research.md` + `people.md` |
 
 ### 4. Make it yours
 
@@ -137,6 +140,7 @@ career-os/
 ├── cv/                  # master.md, ats-checklist.md, versions/
 ├── applications/        # One file per application + pipeline.md dashboard
 ├── jds/                 # Archived job descriptions (for gap analysis)
+├── companies/           # Per-company research folders (gitignored by default)
 ├── scripts/             # Tooling (PDF generation, gap analysis, tracking)
 ├── templates/           # Blank templates for manual use
 ├── examples/            # Worked sample instance + end-to-end pipeline runner

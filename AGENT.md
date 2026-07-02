@@ -26,6 +26,9 @@ Read this file fully before starting. Then follow the phases in order. Do not du
 | `applications/<company-slug>-YYYY-MM.md` | Per-application file: pipeline, notes, feedback loop |
 | `jds/<slug>.txt` | Archived raw job descriptions for gap analysis |
 | `sources/<file>` | Optional raw intake material (old CV, LinkedIn text) — seeds Phase 0; gitignored by default |
+| `companies/<slug>/research.md` | Per-company research hub — the one row in the pipeline's Company Research view |
+| `companies/<slug>/interview-prep.md` | Themes, STAR stories to lead with, questions to ask, prep checklist |
+| `companies/<slug>/people.md` | Founders, interviewers, and warm-intro paths |
 
 ---
 
@@ -503,6 +506,13 @@ everywhere: a visible gap beats a fabricated job.
 
 Ask: "Is there a specific role or company you're targeting right now?"
 
+**If yes, fit-check before you invest.** Before tailoring a CV for a specific company, run
+the **Phase 7.0 triage gate** — location/eligibility, comp viability, role-type fit, values
+dealbreakers. If the role fails a hard filter, stop here: don't tailor a CV or open an
+application for a role the user can't take. The phases are numbered for the full-intake flow,
+but this fit-check belongs *before* any tailoring — the cheapest way to win is to not build
+for a role you can't accept.
+
 If yes:
 - Get the job description or key requirements
 - Within each role, surface the most JD-relevant bullets first and trim the rest — but keep
@@ -554,6 +564,10 @@ The PDF lands next to the markdown file: `cv/versions/<slug>.pdf`.
 
 When the user is ready to apply to a role:
 
+> **Fit-check first.** If you haven't already run the **Phase 7.0** triage gate for this role
+> (location/eligibility, comp, role-type), do it now — don't open an application for a role
+> that fails a hard filter.
+
 1. Save the raw JD to `jds/<slug>.txt`. Reuse the **same `<slug>`** as the tailored CV
    (`cv/versions/<slug>.md`) so the application's `jd_file` and `cv_version` line up.
 2. Run: `python3 scripts/new_application.py --company <name> --role <title> --jd jds/<slug>.txt --cv cv/versions/<slug>.md`
@@ -564,6 +578,67 @@ When the user is ready to apply to a role:
 5. Update `stage` in frontmatter as the application progresses
 6. Fill `Outcome` + `Feedback Loop` sections when closed
 7. Run `python3 scripts/pipeline_report.py` periodically to get master CV suggestions
+
+When you're seriously pursuing a company — not just tracking an application — continue to
+**Phase 7 — Company Research** to build its research folder.
+
+---
+
+## Phase 7 — Company Research
+
+When a company is worth real effort — you're about to apply, or you're already in the
+process — build a research folder for it under `companies/<slug>/`, stamped from the
+templates in `templates/` (`company-research-template.md`, `people-template.md`,
+`interview-prep-template.md`). A company folder is markdown and judgment, not computation —
+there's no script. The point isn't to fill files; it's to reach the moment where you can
+speak to the company with confidence and stay honest about where you don't fit.
+
+### 7.0 — Triage gate (fit-check first, before any investment)
+
+**Before** you open a `companies/` folder or tailor a CV, run a 2–3 question hard-filter
+fit-check with the recruiter or from the JD:
+
+- **Location / eligibility** — can the user actually take this role (country, work
+  authorization, timezone, relocation)?
+- **Comp viability** — is the band, if knowable, in a range worth pursuing?
+- **Role-type fit** — is this the kind of role the user targets (e.g. backend vs.
+  front-end), and does it clear any values dealbreakers (domains they won't work in)?
+
+If a hard filter fails, **stop**: log a one-line no-go in the application/triage note and do
+**not** build research or a tailored CV. The single most expensive mistake in a job search is
+sinking a full research-and-CV build into a role the user was never eligible for — qualify
+first, invest second.
+
+### 7.1 — Research the company (encode the moves, not a file checklist)
+
+Create `companies/<slug>/` and fill **`research.md`** (the hub — the one row that shows in
+the pipeline's Company Research view) and **`people.md`**. As you research, hold two
+disciplines:
+
+- **Separate confirmed from inferred, and cite the source.** Mark each fact as verified
+  (JD, docs, source code, Glassdoor) or a guess. Never present a stack you inferred as if you
+  confirmed it — you'll get caught in the room.
+- **Do "Why I Fit" honestly.** Map real experience to their problem, and name the biggest gap
+  openly with the adjacent experience that covers it. "Used/extended" is not "built/owned." A
+  stretched claim survives the screen and dies in the interview.
+
+Dig for the things that **change your behavior**, not trivia: funding and stage → comp
+posture and risk; tech stack → the topics they'll test; competitive wedge → your "why this
+company" answer; team pedigree → who's across the table (feed this into `people.md`).
+
+**Stop condition:** research is done when the user can answer five questions in their own
+words — what the company does, why it matters, the hard technical problem, why they fit, and
+what they must ask — **not** when every section is full.
+
+**Seniority gate:** is this a senior/staff role, or a deeply technical / source-available
+target? If so, also create an `architecture.md` deep-dive; for a standard role, skip it.
+
+Keep `research.md`'s `status` current as things move, and cross-link the application file
+(`applications/<company>-<role>-YYYY-MM.md`, as `new_application.py` names it) and the JD
+(`jds/<slug>.txt`) so the loop from research →
+application → CV stays connected. Research can begin **before** applying — a strong "why this
+company" is worth writing early. When interviews are scheduled, carry this into
+`interview-prep.md` (template in `templates/`).
 
 ---
 
@@ -589,6 +664,12 @@ When the full intake is complete, these files should exist:
 - [ ] `cv/master.md`
 - [ ] `cv/versions/<target>.md` (if a specific opportunity was named)
 - [ ] `cv/versions/<target>.pdf` — generated via `python3 scripts/generate_cv.py`
+
+**Company Research** (optional — one folder per company you're seriously pursuing)
+- [ ] `companies/<slug>/research.md`
+- [ ] `companies/<slug>/people.md`
+- [ ] `companies/<slug>/interview-prep.md` (as interviews approach)
+- [ ] `companies/<slug>/architecture.md` (optional — senior/staff or deeply technical roles)
 
 ---
 
