@@ -9,6 +9,20 @@ mean for a template repo.
 
 ## [Unreleased]
 
+### Added
+- **The Judgment Flywheel — full-momentum upgrade** (`flywheel/`): an optional, opt-in
+  layer for **Claude Code** users that adds session-to-session momentum on top of the
+  v1.5.0 retro loop. Ships a tracked `flywheel/` directory with a `save-memory` skill
+  (the capture engine — reviews a session and persists user / feedback / project /
+  reference facts, and promotes durable job-search lessons back into `lessons.md`) and a
+  `flywheel/README.md` that doubles as the **agent-executed install runbook**: tell Claude
+  Code "set up the flywheel" and it installs the skill into the gitignored `.claude/`
+  (skipping if a global `save-memory` already exists). No script, no new dependency, and
+  nothing installed is ever committed. The harness auto-loads the memory index natively;
+  an index-first manifest hook is documented as an **advanced, optional** extra, not part
+  of the default install. Other editors stay on the editor-agnostic `lessons.md` loop and
+  lose nothing.
+
 ## [1.5.0] — 2026-07-02
 
 ### Added

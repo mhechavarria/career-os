@@ -732,6 +732,9 @@ seeded `examples/sample-candidate/lessons.md` shows the shape and the altitude t
 so each run starts sharper than the last — that's the flywheel. A no-go pattern you named once
 saves the next wasted build; an interview lesson you distilled once changes how you prep.
 
+On Claude Code you can add session-to-session momentum on top of this loop — a persistent memory
+the agent carries between runs — with the optional upgrade in [`flywheel/`](flywheel/README.md).
+
 `pipeline_report.py` is a **separate, complementary** tool, not part of this loop: it
 aggregates outcomes across applications (a conversion funnel and recurring keyword gaps in
 your CVs). It has no `lessons.md` integration — use it for the quantitative view, and the
