@@ -9,6 +9,8 @@ mean for a template repo.
 
 ## [Unreleased]
 
+## [1.6.0] — 2026-07-02
+
 ### Added
 - **The Judgment Flywheel — full-momentum upgrade** (`flywheel/`): an optional, opt-in
   layer for **Claude Code** users that adds session-to-session momentum on top of the
@@ -203,7 +205,8 @@ mean for a template repo.
 - Project governance: MIT license, contribution guide, code of conduct, security
   policy, PR/issue templates, Dependabot, and CI (lint · test · PDF render).
 
-[Unreleased]: https://github.com/mhechavarria/career-os/compare/v1.5.0...HEAD
+[Unreleased]: https://github.com/mhechavarria/career-os/compare/v1.6.0...HEAD
+[1.6.0]: https://github.com/mhechavarria/career-os/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/mhechavarria/career-os/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/mhechavarria/career-os/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/mhechavarria/career-os/compare/v1.2.0...v1.3.0
