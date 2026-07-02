@@ -34,6 +34,13 @@ mean for a template repo.
 - `AGENT.md` **Phase 5** gains an explicit **honest-framing** rule: never inflate scope
   (used/extended ≠ built/owned), reframe grey-area work as the business outcome, and never
   imply employment at a vendor whose product you only integrated.
+- **The Judgment Flywheel** — a repo-native `lessons.md` playbook that makes judgment
+  compound across runs. `AGENT.md` **Phase 9 — Retro & the Judgment Flywheel** captures a
+  short retro on **any** terminal outcome (including wins — offer/placed, the most valuable
+  retro), and Phases 7.0 / 7 / 8 read `lessons.md` first so past lessons sharpen the next
+  run before effort is spent. Ships an empty, instructional root `lessons.md` and a seeded
+  example (`examples/sample-candidate/lessons.md`); the `AGENT.md` intro and README are
+  refreshed for the full research → interview → retro scope.
 
 ### Changed
 - `AGENT.md` Phase 0 no longer references a "planned" automated DOCX/PDF extraction

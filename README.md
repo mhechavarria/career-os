@@ -53,6 +53,8 @@ lock-in, no export button to beg for.
 - Per-company **research folders** — a fit-check triage gate, research, and interview
   prep, feeding a research view on the dashboard (gitignored by default — they can hold
   sensitive notes).
+- A **retro loop** that compounds each application's lessons into a durable `lessons.md`
+  playbook, read back into triage and prep so the next run starts sharper.
 - Fully portable: plain markdown + Git, no vendor lock-in.
 
 ## What this is not
@@ -100,6 +102,7 @@ good pace).
 | CV assembly | `cv/master.md` + `cv/versions/<target>.md` |
 | Applications | `applications/<company>-YYYY-MM.md` + `jds/<slug>.txt` |
 | Company research *(optional)* | `companies/<slug>/research.md`, `people.md`, `interview-prep.md` (+ optional `architecture.md`) |
+| Retro & lessons loop | per-application retros + `lessons.md` (compounds over runs) |
 
 ### 4. Make it yours
 
