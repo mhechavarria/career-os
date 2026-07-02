@@ -57,6 +57,11 @@ lock-in, no export button to beg for.
   playbook, read back into triage and prep so the next run starts sharper.
 - Fully portable: plain markdown + Git, no vendor lock-in.
 
+> **Level up (Claude Code):** turn the retro loop into a full-momentum flywheel — a persistent
+> memory the agent carries between sessions, plus a `save-memory` capture skill. Optional, and
+> layered on top of the loop above (other editors lose nothing). See
+> [`flywheel/`](flywheel/README.md).
+
 ## What this is not
 
 - Not a hosted service — everything runs locally in your own clone.
