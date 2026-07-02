@@ -29,6 +29,7 @@ Read this file fully before starting. Then follow the phases in order. Do not du
 | `companies/<slug>/research.md` | Per-company research hub — the one row in the pipeline's Company Research view |
 | `companies/<slug>/interview-prep.md` | Themes, STAR stories to lead with, questions to ask, prep checklist |
 | `companies/<slug>/people.md` | Founders, interviewers, and warm-intro paths |
+| `companies/<slug>/architecture.md` | Optional technical deep-dive (senior/staff or source-available targets) |
 
 ---
 
@@ -481,6 +482,19 @@ condensed, recruiter-facing selection drawn from the fuller `profile/skills.md` 
 promote current/relevant skills to **Core**, fold older ones into **Background**, and drop
 anything off-target. It is a CV view of the same skills, not a second source of truth.
 
+**Honest framing (applies to every bullet and the summary).** The CV is where grey-area
+claims are most tempting and most costly — a stretched line survives the résumé screen and
+dies in the interview. Hold the line:
+- **Never inflate scope.** "Used" or "extended" is not "built" or "owned"; "contributed to"
+  is not "led." Match the verb to what you actually did.
+- **Reframe grey-area work as the business outcome**, not a louder verb — describe the
+  result you drove, not a heroic-sounding activity. Prefer "unblocked" over "rescued."
+- **Don't claim employment at a vendor whose product you only integrated.** Integrating or
+  extending a third-party product or SDK is integration experience, not a job at that
+  company — write "integrated `<Product>`," never phrasing that implies you worked there.
+- This is the same "seed, don't autocomplete" honesty from Phases 0 and 3, applied to the
+  finished CV: an honest, smaller claim always beats an impressive one you can't defend.
+
 **Long careers (more than ~5–6 roles).** A full reverse-chronological listing with 3–5
 bullets each will blow past the 2-page cap (`generate_cv.py` warns above 2 pages). Give the
 **recent 3–4 roles** full bullets and condense the older ones into a single
@@ -631,14 +645,59 @@ words — what the company does, why it matters, the hard technical problem, why
 what they must ask — **not** when every section is full.
 
 **Seniority gate:** is this a senior/staff role, or a deeply technical / source-available
-target? If so, also create an `architecture.md` deep-dive; for a standard role, skip it.
+target? If so, also create an `architecture.md` deep-dive (from `architecture-template.md`);
+for a standard role, skip it.
 
 Keep `research.md`'s `status` current as things move, and cross-link the application file
 (`applications/<company>-<role>-YYYY-MM.md`, as `new_application.py` names it) and the JD
 (`jds/<slug>.txt`) so the loop from research →
 application → CV stays connected. Research can begin **before** applying — a strong "why this
-company" is worth writing early. When interviews are scheduled, carry this into
-`interview-prep.md` (template in `templates/`).
+company" is worth writing early. When interviews are scheduled, continue to **Phase 8 —
+Interview Prep**.
+
+---
+
+## Phase 8 — Interview Prep
+
+Once interviews are scheduled, fill `companies/<slug>/interview-prep.md` (from
+`interview-prep-template.md`). The job here is **selection, not invention** — the stories
+already exist in `impacts/` and `experience/`; interview prep decides which to lead with and
+how to land them.
+
+**Read `people.md` first.** If you know who's on the loop, reorder which STAR story you lead
+with to match their background — this is the single highest-value prep move. An ex-SRE
+interviewer → lead with the reliability story; a data/streaming interviewer → lead with the
+event-sourcing one. Don't tell every story; lead with the right one.
+
+**Map themes → stories.** For each theme the JD implies, pick **one** already-documented STAR
+story (reuse `star-stories-template.md` for the detail). Give one vivid specific, name the
+mechanism, and land a company-tied punchline — "that's the property their risk core lives or
+dies on." Never invent a story or a metric to fit a theme; if there's no real story for a
+theme, that's an honest gap to note, not a gap to fill with fiction.
+
+**Pre-write the honest answer to this role's weakest gap.** Every role has one thing you
+haven't done. Decide in advance how you'll answer it — name the gap, then the adjacent
+experience that covers it and how fast you'd ramp. A prepared, honest gap answer beats a
+surprised, defensive one.
+
+**System-design prep — senior/staff only.** Prep the *one* design question the company's
+product most likely implies, mapped onto their actual stack (from `research.md` /
+`architecture.md`), so you design in their world, not a generic one.
+
+**Handle the recruiter screen / first call as its own beat.** It's logistics and fit, not
+depth — but it sets your level and comp anchor. Confirm the level this maps to, the comp
+band (ask early), timezone/format, and eligibility. Where the process has a **take-home or
+work-trial**, prep it as its own beat: timebox it, show judgment (tests + a short README on
+trade-offs), and don't gold-plate.
+
+**Questions to ask** must signal you understood *their* specific situation — pull them from
+`research.md`'s Open Questions, not a generic list.
+
+**In-interview anonymization (distinct from CV honesty).** Tell your stories without naming
+real customers or citing internal ticket/PR numbers or confidential figures — speak to the
+shape of the problem and your role in it. This is about discretion with a prior employer's
+information, separate from the no-inflation rule: stay honest about *what you did*, private
+about *whose data it was*.
 
 ---
 
