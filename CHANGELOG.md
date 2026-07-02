@@ -9,6 +9,8 @@ mean for a template repo.
 
 ## [Unreleased]
 
+## [1.5.0] — 2026-07-02
+
 ### Added
 - **Company research folders** (`companies/<slug>/`) as a first-class part of the
   framework. `AGENT.md` gains **Phase 7 — Company Research**: a triage gate that
@@ -187,7 +189,8 @@ mean for a template repo.
 - Project governance: MIT license, contribution guide, code of conduct, security
   policy, PR/issue templates, Dependabot, and CI (lint · test · PDF render).
 
-[Unreleased]: https://github.com/mhechavarria/career-os/compare/v1.4.0...HEAD
+[Unreleased]: https://github.com/mhechavarria/career-os/compare/v1.5.0...HEAD
+[1.5.0]: https://github.com/mhechavarria/career-os/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/mhechavarria/career-os/compare/v1.3.0...v1.4.0
 [1.3.0]: https://github.com/mhechavarria/career-os/compare/v1.2.0...v1.3.0
 [1.2.0]: https://github.com/mhechavarria/career-os/compare/v1.1.0...v1.2.0
