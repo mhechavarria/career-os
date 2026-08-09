@@ -37,7 +37,8 @@ and `MEMORY.md` inside that directory is the index.
    - Run `wc -c MEMORY.md` and classify: **green** `< 16,000` (report only), **amber**
      `16,000–19,999` (an archive sweep is required before this save reports done), **red**
      `>= 20,000` (this save may not report clean until the index is under `12,000` bytes, or
-     the user explicitly waives the sweep). Byte gate only — lines are reported, never gated on.
+     the user explicitly waives the sweep). The sweep trigger is bytes only — the index's line
+     count is reported, never a trigger. The 160-char per-line cap above is a separate hard gate.
      These bands measure the auto-loaded context budget, not the store's total size — the same
      numbers apply to every session, and they are meant to be edited locally if your harness's
      context budget differs.
