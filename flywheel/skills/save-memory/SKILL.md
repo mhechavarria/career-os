@@ -26,7 +26,34 @@ and `MEMORY.md` inside that directory is the index.
    - **Correct or remove** anything this session proved stale or wrong.
    - **Do NOT save**: ephemeral task state, anything derivable from current code / `git log`, fix recipes already in the commit, or content already in `AGENT.md`. If the user explicitly asks to save such a thing, save only what was *surprising or non-obvious* about it.
 
-4. **Write each memory** as its own file with this frontmatter, then add/refresh its one-line pointer in `MEMORY.md` (index lines stay under ~150 chars, no frontmatter in the index):
+4. **Write each memory** as its own file with this frontmatter, then add/refresh its one-line pointer in `MEMORY.md`.
+
+   **Index discipline (hard rules):**
+   - An index line is a HOOK, not a changelog: hard cap **160 chars**, one line, no frontmatter in the index.
+   - When updating an existing entry, **rewrite its index line from scratch** to state only the *current* status + at most one next action. **Never append** new facts, dates, or status to an existing line.
+   - Any fact you are tempted to put in the index goes into the **body first** (dated); the index line only points to it.
+
+   **Archive sweep (index budget gate — checked every save):**
+   - Run `wc -c MEMORY.md` and classify: **green** `< 16,000` (report only), **amber**
+     `16,000–19,999` (an archive sweep is required before this save reports done), **red**
+     `>= 20,000` (this save may not report clean until the index is under `12,000` bytes, or
+     the user explicitly waives the sweep). Byte gate only — lines are reported, never gated on.
+     These bands measure the auto-loaded context budget, not the store's total size — the same
+     numbers apply to every session, and they are meant to be edited locally if your harness's
+     context budget differs.
+   - **Archive eligibility**: a memory moves to `<memory-dir>/archive/` (move it — use `git mv` if
+     your memory dir is a git repo, never delete) plus a rewritten hook line in
+     `<memory-dir>/ARCHIVE.md` only when it is `project_*` **and** terminal
+     (REJECTED/CLOSED/PASSED/SHIPPED/DONE/EXECUTED) **and** actionless (no next action, no future
+     date). FROZEN/PARKED/PAUSED/DEFERRED entries and any entry carrying a future date stay
+     active. `user_*`/`feedback_*`/`reference_*` never archive — they are standing, not episodic.
+     Nothing is ever deleted; a wrong archive is one move back plus a fresh `MEMORY.md` line.
+     `archive/` and `ARCHIVE.md` are created on first use.
+   - Before finishing, verify: `grep '^- \[' MEMORY.md | awk 'length($0)>160'` prints **nothing**
+     and the byte band above is satisfied — run the sweep if amber/red (the facts are already in
+     bodies) before reporting done.
+
+   File format:
    ```markdown
    ---
    name: {{kebab-case-slug}}
@@ -42,7 +69,17 @@ and `MEMORY.md` inside that directory is the index.
 
 6. **Feed the flywheel — promote durable lessons.** Auto-memory is session-to-session momentum, but it is Claude-Code-specific. When a `feedback` or `project` memory captures a **durable, generalized job-search lesson** (a no-go pattern, what predicted an outcome, a comp or triage rule that will recur), also promote the generalized form into `lessons.md` (Phase 9 of `AGENT.md`). That store is editor-agnostic and is what Phases 7.0 / 7 / 8 read back — so a lesson written there sharpens every future run, not just Claude Code sessions.
 
-7. **Report** a concise summary: which files were created, updated, or removed, and the index changes. No need to dump file contents.
+7. **Back up the store, if it is one.** Check `git -C <memory-dir> rev-parse --git-dir`. If that
+   exits non-zero, the memory directory is not a git repo — this step performs no action and
+   prints nothing at all, not even a suggestion to set one up. If it exits zero, print the exact
+   commands to run and stop; never run them yourself:
+   ```bash
+   git -C <memory-dir> add <changed files>
+   git -C <memory-dir> commit -m "<conventional commit message>"
+   git -C <memory-dir> push origin <branch>
+   ```
+
+8. **Report** a concise summary: which files were created, updated, or removed, and the index changes. No need to dump file contents.
 
 ## Scope notes
 - Only touch the **current** repo's memory dir (the one named in your session context) — never another project's memory.
