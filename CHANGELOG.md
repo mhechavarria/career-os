@@ -23,6 +23,16 @@ mean for a template repo.
   the flywheel itself still never runs a commit or a push. Step 6 (`lessons.md` promotion) is
   unchanged.
 
+### Fixed
+- **`flywheel/skills/save-memory/SKILL.md` — the repo-root check no longer false-negatives on a
+  trailing slash.** Step 7 gates the backup reminder on `git -C <memory-dir> rev-parse
+  --show-toplevel` printing the memory directory itself, but that comparison was literal, and
+  `--show-toplevel` never emits a trailing slash while a memory directory is very often written
+  with one. A correctly configured store could therefore read as a mismatch. Because the step is
+  a deliberate silent no-op when the check fails, the symptom was no output at all: the backup
+  reminder simply never appeared, with nothing to indicate why. The check now strips a trailing
+  `/` from both sides before comparing.
+
 ## [1.6.0] — 2026-07-02
 
 ### Added
