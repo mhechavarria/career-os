@@ -1,5 +1,11 @@
 # Development + CI dependencies
+#
+# These are pinned exactly, unlike the `>=` floors in requirements.txt. Runtime
+# dependencies want room to move for whoever installs the framework; the tools that
+# gate CI want the opposite, because an unpinned linter silently changes what "green"
+# means. Dependabot covers pip weekly, so upgrades arrive as a reviewable PR instead
+# of as a surprise on an unrelated branch.
 -r requirements.txt
-ruff
-pytest
-pymarkdownlnt
+ruff==0.16.2
+pytest==9.1.1
+pymarkdownlnt==0.9.39
