@@ -35,7 +35,8 @@ and `MEMORY.md` inside that directory is the index.
 
    **Archive sweep (index budget gate — checked every save):**
    - Run `wc -c MEMORY.md` and classify: **green** `< 16,000` (report only), **amber**
-     `16,000–19,999` (an archive sweep is required before this save reports done), **red**
+     `16,000–19,999` (run an archive sweep before this save reports done; if the sweep finds
+     nothing eligible, say so and report done anyway — amber never blocks on its own), **red**
      `>= 20,000` (this save may not report clean until the index is under `12,000` bytes, or
      the user explicitly waives the sweep). The sweep trigger is bytes only — the index's line
      count is reported, never a trigger. The 160-char per-line cap above is a separate hard gate.
@@ -77,9 +78,13 @@ and `MEMORY.md` inside that directory is the index.
 
 6. **Feed the flywheel — promote durable lessons.** Auto-memory is session-to-session momentum, but it is Claude-Code-specific. When a `feedback` or `project` memory captures a **durable, generalized job-search lesson** (a no-go pattern, what predicted an outcome, a comp or triage rule that will recur), also promote the generalized form into `lessons.md` (Phase 9 of `AGENT.md`). That store is editor-agnostic and is what Phases 7.0 / 7 / 8 read back — so a lesson written there sharpens every future run, not just Claude Code sessions.
 
-7. **Back up the store, if it is one.** Check `git -C <memory-dir> rev-parse --git-dir`. If that
-   exits non-zero, the memory directory is not a git repo — this step performs no action and
-   prints nothing at all, not even a suggestion to set one up. If it exits zero, print the exact
+7. **Back up the store, if it is one.** Check that the memory directory is a repository **root**:
+   `git -C <memory-dir> rev-parse --show-toplevel` must succeed *and* print `<memory-dir>` itself.
+   Use `--show-toplevel`, not `--git-dir`: `--git-dir` also succeeds when the memory directory
+   merely sits somewhere inside an unrelated repository — a dotfiles repo rooted at `$HOME`, say —
+   and the commands below would then stage your memory into that repo. If the check fails or the
+   path differs, the memory directory is not its own git repo: this step performs no action and
+   prints nothing at all, not even a suggestion to set one up. If it matches, print the exact
    commands to run and stop; never run them yourself:
    ```bash
    git -C <memory-dir> add <changed files>
