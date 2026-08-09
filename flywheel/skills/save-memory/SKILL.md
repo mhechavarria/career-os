@@ -54,6 +54,13 @@ and `MEMORY.md` inside that directory is the index.
      and the byte band above is satisfied — run the sweep if amber/red (the facts are already in
      bodies) before reporting done.
 
+   **File name:** `<type>_<kebab-case-slug>.md`, using the same four types as the
+   frontmatter (`user_`, `feedback_`, `project_`, `reference_`). That prefix is what the
+   archive-eligibility rules above key on, so a memory saved without it can never be
+   swept and the byte gate can never be cleared. The `name:` field below stays the **bare
+   slug with no prefix** — it is what `[[links]]` resolve to, so prefixing it would break
+   every link.
+
    File format:
    ```markdown
    ---

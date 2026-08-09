@@ -15,10 +15,13 @@ mean for a template repo.
   existing line, never appends), GREEN/AMBER/RED byte bands (`< 16,000` / `16,000–19,999` /
   `>= 20,000`) with an archive-sweep procedure, and the
   `grep '^- \[' MEMORY.md | awk 'length($0)>160'` verification command run before a save reports
-  done. Adds a new step 7, "Back up the store, if it is one" — a reminder-only step that prints
-  the exact `git add`/`commit`/`push` commands only when the memory directory is already its own
-  git repo, and stays a silent no-op otherwise; the flywheel itself still never runs a commit or a
-  push. Step 6 (`lessons.md` promotion) is unchanged.
+  done. Step 4 also states the `<type>_<slug>.md` file-name convention that the
+  archive-eligibility rules key on, and clarifies that the `name:` frontmatter field stays the
+  bare slug because it is the `[[link]]` target. Adds a new step 7, "Back up the store, if it
+  is one" — a reminder-only step that prints the exact `git add`/`commit`/`push` commands only
+  when the memory directory is already its own git repo, and stays a silent no-op otherwise;
+  the flywheel itself still never runs a commit or a push. Step 6 (`lessons.md` promotion) is
+  unchanged.
 
 ## [1.6.0] — 2026-07-02
 
