@@ -109,9 +109,80 @@ As a `SessionStart` command hook it looks like:
 
 **Restart the session** to activate the hook.
 
+## Advanced (optional): a durable, checked memory store
+
+The default install above keeps your memory local to this one machine. If you want a real
+backup — so a lost laptop does not erase everything the flywheel accumulated — you can turn the
+memory directory into its own git repo with an integrity gate on top. This is a second, separate
+opt-in layer; skip it if the manifest hook above is enough for you.
+
+**Create the remote private, before anything else.** Your memory holds personal facts,
+corrections, and in-flight decisions, so before you run `git init` anywhere, create the remote
+repo (GitHub, GitLab, etc.) and set its visibility to **private**.
+
+**One recommended shape: a separate git repo, outside your Career OS clone.** Do not nest it
+inside this repository or any other project's checkout.
+
+1. **Use the harness-reported path.** Your session's `# Memory` context names the exact absolute
+   path to the current project's memory directory — use that path verbatim. A hand-derived slug
+   strands the repo at the old location if the project's path is later moved or renamed; the
+   harness-reported path does not have that problem.
+2. **Initialize it as its own repo** at that path, then point it at your private remote:
+
+   ```bash
+   git -C <the memory dir your session's # Memory context names> init
+   git -C <memory dir> remote add origin <your private remote URL>
+   ```
+
+3. **Copy the integrity check and hook** from this repo into the memory dir, then re-mark them
+   executable (Windows, and some archivers, drop the exec bit on copy):
+
+   ```bash
+   cp flywheel/check_memory.sh <memory dir>/check_memory.sh
+   mkdir -p <memory dir>/.git/hooks
+   cp flywheel/hooks/pre-push <memory dir>/.git/hooks/pre-push
+   chmod +x <memory dir>/check_memory.sh <memory dir>/.git/hooks/pre-push
+   ```
+
+4. From here on, `save-memory`'s step 7 reminds you to commit and push whenever the memory
+   directory is a git repo — it never runs the commit or the push itself.
+
+### What the check catches
+
+`check_memory.sh` runs five read-only checks against the memory directory: the index-file size
+band, the 160-char per-line cap, whether every memory body has an index line pointing at it,
+whether every index link resolves to a **tracked** file, and whether frontmatter matches the
+documented file format. The `pre-push` hook runs it before anything leaves the machine and
+blocks the push on any `FAIL`. The escape hatch is `git push --no-verify`.
+
+Here is one real failure, from an index line pointing at a body that was written but never
+`git add`ed. This is the failure a new adopter is most likely to hit, because it is invisible on
+the machine where it happens and only breaks for whoever clones the repo next:
+
+```text
+memory check: /home/you/.claude-memory/career-os
+  ok    index 108 bytes [GREEN]
+  ok    all 1 bodies resolve to an index line
+  FAIL  index link(s) whose body is NOT tracked by git — a clone would see a dangling link:
+          project-example.md  (git add "project-example.md")
+  ok    frontmatter readable in all 1 bodies
+
+MEMORY CHECK FAILED — 1 problem(s), 0 warning(s)
+Fix, or push anyway with:  git push --no-verify
+```
+
+**Known limit, stated plainly.** `check_memory.sh` validates the **working tree**, not `HEAD`. A
+body file that is staged but not yet committed passes this check locally while still being
+absent from the tree you actually push. Checking `HEAD` instead would close that gap, but it
+would also fire on every ordinary edit cycle — saving a memory before committing it — and a gate
+that is noisy in the common case gets bypassed with `--no-verify` instead of fixed. The gate is
+not airtight; it catches the failure mode above, not every possible one.
+
 ## What this never does
 
-- Never commits anything it installs — it only writes into the **gitignored** `.claude/` and the
-  external Claude Code memory directory. Your facts stay on your machine.
+- Never commits or pushes anything itself — it only writes into the **gitignored** `.claude/`
+  directory, the external Claude Code memory directory, and, if you opt into the durability tier
+  above, `<memory-dir>/.git/hooks/`, still outside this repo. The `save-memory` step 7 above only
+  *reminds* you to commit and push; it never runs either command.
 - Never overwrites existing memory or existing settings — installs are additive and idempotent
   (re-running the runbook no-ops on the skill and re-reports the global-skip).
