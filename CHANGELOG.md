@@ -9,6 +9,8 @@ mean for a template repo.
 
 ## [Unreleased]
 
+## [1.7.0] — 2026-08-10
+
 ### Added
 - **`flywheel/skills/save-memory/SKILL.md` — index-discipline parity.** Step 4 now states a hard
   160-char cap per `MEMORY.md` index line, a rewrite-in-place rule (an updated entry replaces its
@@ -247,7 +249,8 @@ mean for a template repo.
 - Project governance: MIT license, contribution guide, code of conduct, security
   policy, PR/issue templates, Dependabot, and CI (lint · test · PDF render).
 
-[Unreleased]: https://github.com/mhechavarria/career-os/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/mhechavarria/career-os/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/mhechavarria/career-os/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/mhechavarria/career-os/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/mhechavarria/career-os/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/mhechavarria/career-os/compare/v1.3.0...v1.4.0
