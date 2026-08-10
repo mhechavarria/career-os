@@ -79,13 +79,16 @@ and `MEMORY.md` inside that directory is the index.
 6. **Feed the flywheel — promote durable lessons.** Auto-memory is session-to-session momentum, but it is Claude-Code-specific. When a `feedback` or `project` memory captures a **durable, generalized job-search lesson** (a no-go pattern, what predicted an outcome, a comp or triage rule that will recur), also promote the generalized form into `lessons.md` (Phase 9 of `AGENT.md`). That store is editor-agnostic and is what Phases 7.0 / 7 / 8 read back — so a lesson written there sharpens every future run, not just Claude Code sessions.
 
 7. **Back up the store, if it is one.** Check that the memory directory is a repository **root**:
-   `git -C <memory-dir> rev-parse --show-toplevel` must succeed *and* print `<memory-dir>` itself.
-   Use `--show-toplevel`, not `--git-dir`: `--git-dir` also succeeds when the memory directory
-   merely sits somewhere inside an unrelated repository — a dotfiles repo rooted at `$HOME`, say —
-   and the commands below would then stage your memory into that repo. If the check fails or the
-   path differs, the memory directory is not its own git repo: this step performs no action and
-   prints nothing at all, not even a suggestion to set one up. If it matches, print the exact
-   commands to run and stop; never run them yourself:
+   `git -C <memory-dir> rev-parse --show-toplevel` must succeed *and* print `<memory-dir>` itself,
+   **ignoring a trailing slash**. Strip any trailing `/` from both sides before comparing:
+   `--show-toplevel` never emits one, and a memory directory is very often written with it, so a
+   literal comparison reports a mismatch on a setup that is in fact correct. Use `--show-toplevel`,
+   not `--git-dir`: `--git-dir` also succeeds when the memory directory merely sits somewhere
+   inside an unrelated repository — a dotfiles repo rooted at `$HOME`, say — and the commands
+   below would then stage your memory into that repo. If the check fails or the normalized paths
+   differ, the memory directory is not its own git repo: this step performs no action and prints
+   nothing at all, not even a suggestion to set one up. If it matches, print the exact commands to
+   run and stop; never run them yourself:
    ```bash
    git -C <memory-dir> add <changed files>
    git -C <memory-dir> commit -m "<conventional commit message>"
