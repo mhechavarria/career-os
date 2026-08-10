@@ -151,8 +151,9 @@ inside this repository or any other project's checkout.
 
 `check_memory.sh` runs five read-only checks against the memory directory: the index-file size
 band, the 160-char per-line cap, whether every memory body has an index line pointing at it,
-whether every index link resolves to a **tracked** file, and whether frontmatter matches the
-documented file format. The `pre-push` hook runs it before anything leaves the machine and
+whether every index link resolves to a **tracked** file — and whether the index files themselves
+are tracked, because committing bodies while `MEMORY.md` stays untracked hands the clone a store
+with no index at all — and whether frontmatter matches the documented file format. The `pre-push` hook runs it before anything leaves the machine and
 blocks the push on any `FAIL`. The escape hatch is `git push --no-verify`.
 
 Here is one real failure, from an index line pointing at a body that was written but never

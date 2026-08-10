@@ -118,6 +118,22 @@ if [ -n "$TOPLEVEL" ] && [ -n "$MEMDIR_REAL" ]; then
   [ "$MEMDIR_REAL" = "$TOPLEVEL_REAL" ] && GITREPO=1
 fi
 
+# The index files themselves must be tracked, not only the bodies they point at.
+# Committing a body while MEMORY.md stays untracked passes every link check
+# below — the links all resolve, and the file is right there on disk — yet the
+# clone arrives with no index at all. Reported separately because the loss is
+# different in kind: an untracked body costs one memory, an untracked index
+# costs the way back to all of them. Check 1 already treats a missing MEMORY.md
+# as fatal; this is the same judgment applied to the tree that gets pushed.
+UNTRACKED_INDEX=""
+if [ "$GITREPO" -eq 1 ]; then
+  for idx in MEMORY.md ARCHIVE.md; do
+    [ -f "$MEMDIR/$idx" ] || continue
+    git -C "$MEMDIR" ls-files --error-unmatch "$idx" > /dev/null 2>&1 ||
+      UNTRACKED_INDEX="$UNTRACKED_INDEX$idx$NL"
+  done
+fi
+
 DANGLING=""
 UNTRACKED=""
 while IFS= read -r target; do
@@ -143,7 +159,11 @@ if [ -n "$UNTRACKED" ]; then
   fail "index link(s) whose body is NOT tracked by git — a clone would see a dangling link:"
   while IFS= read -r u; do [ -n "$u" ] && echo "          $u  (git add \"$u\")"; done <<< "$UNTRACKED"
 fi
-if [ -z "$DANGLING" ] && [ -z "$UNTRACKED" ]; then
+if [ -n "$UNTRACKED_INDEX" ]; then
+  fail "index file(s) NOT tracked by git — a clone would arrive with no index at all:"
+  while IFS= read -r i; do [ -n "$i" ] && echo "          $i  (git add \"$i\")"; done <<< "$UNTRACKED_INDEX"
+fi
+if [ -z "$DANGLING" ] && [ -z "$UNTRACKED" ] && [ -z "$UNTRACKED_INDEX" ]; then
   if [ "$GITREPO" -eq 1 ]; then
     echo "  ok    every index link resolves to a tracked file"
   else

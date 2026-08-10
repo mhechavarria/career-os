@@ -23,7 +23,7 @@ mean for a template repo.
   the flywheel itself still never runs a commit or a push. Step 6 (`lessons.md` promotion) is
   unchanged. Also ships an opt-in **durability tier**: `flywheel/check_memory.sh`, a read-only
   integrity check (index-size band, the 160-char line cap, index-to-body resolution, tracked-file
-  linkage, and frontmatter shape) and `flywheel/hooks/pre-push`, a thin caller that blocks a push
+  linkage for both the bodies and the index files themselves, and frontmatter shape) and `flywheel/hooks/pre-push`, a thin caller that blocks a push
   on any `FAIL`, both documented in a new `flywheel/README.md` § "Advanced (optional): a durable,
   checked memory store" section. Both scripts are read-only, and both install into the memory
   directory (`check_memory.sh` at its root, the hook in its `.git/hooks/`), still outside this
