@@ -29,6 +29,18 @@ mean for a template repo.
   directory (`check_memory.sh` at its root, the hook in its `.git/hooks/`), still outside this
   repo; the README's "What this never does" bullet is precision-fixed to say so.
 
+### Changed
+- **The dev toolchain and ruff's rule set are now pinned explicitly.** `requirements-dev.txt`
+  pins `ruff==0.16.2`, `pytest==9.1.1` and `pymarkdownlnt==0.9.39` instead of resolving to
+  whatever was newest at CI time, and `ruff.toml` selects `["E4", "E7", "E9", "F"]` rather than
+  inheriting ruff's implicit default. That default is not stable across releases: ruff 0.16
+  dropped `E4` and added isort, refurb, pylint and several flake8 rule sets, which turned CI red
+  on code that had not changed. Pinning one dimension without the other leaves the same trap, so
+  both are pinned — and a fork's first CI run now fails only on rules the fork opted into.
+  Dependabot already covers pip weekly, so upgrades arrive as a reviewable PR instead of as a
+  surprise on an unrelated branch. (#39)
+- Bumped CI GitHub Actions: `actions/setup-python` v7. (#37)
+
 ### Fixed
 - **`flywheel/skills/save-memory/SKILL.md` — the repo-root check no longer false-negatives on a
   trailing slash.** Step 7 gates the backup reminder on `git -C <memory-dir> rev-parse
