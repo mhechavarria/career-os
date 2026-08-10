@@ -9,6 +9,36 @@ mean for a template repo.
 
 ## [Unreleased]
 
+### Added
+- **`flywheel/skills/save-memory/SKILL.md` — index-discipline parity.** Step 4 now states a hard
+  160-char cap per `MEMORY.md` index line, a rewrite-in-place rule (an updated entry replaces its
+  existing line, never appends), GREEN/AMBER/RED byte bands (`< 16,000` / `16,000–19,999` /
+  `>= 20,000`) with an archive-sweep procedure, and the
+  `grep '^- \[' MEMORY.md | awk 'length($0)>160'` verification command run before a save reports
+  done. Step 4 also states the `<type>_<slug>.md` file-name convention that the
+  archive-eligibility rules key on, and clarifies that the `name:` frontmatter field stays the
+  bare slug because it is the `[[link]]` target. Adds a new step 7, "Back up the store, if it
+  is one" — a reminder-only step that prints the exact `git add`/`commit`/`push` commands only
+  when the memory directory is already its own git repo, and stays a silent no-op otherwise;
+  the flywheel itself still never runs a commit or a push. Step 6 (`lessons.md` promotion) is
+  unchanged. Also ships an opt-in **durability tier**: `flywheel/check_memory.sh`, a read-only
+  integrity check (index-size band, the 160-char line cap, index-to-body resolution, tracked-file
+  linkage for both the bodies and the index files themselves, and frontmatter shape) and `flywheel/hooks/pre-push`, a thin caller that blocks a push
+  on any `FAIL`, both documented in a new `flywheel/README.md` § "Advanced (optional): a durable,
+  checked memory store" section. Both scripts are read-only, and both install into the memory
+  directory (`check_memory.sh` at its root, the hook in its `.git/hooks/`), still outside this
+  repo; the README's "What this never does" bullet is precision-fixed to say so.
+
+### Fixed
+- **`flywheel/skills/save-memory/SKILL.md` — the repo-root check no longer false-negatives on a
+  trailing slash.** Step 7 gates the backup reminder on `git -C <memory-dir> rev-parse
+  --show-toplevel` printing the memory directory itself, but that comparison was literal, and
+  `--show-toplevel` never emits a trailing slash while a memory directory is very often written
+  with one. A correctly configured store could therefore read as a mismatch. Because the step is
+  a deliberate silent no-op when the check fails, the symptom was no output at all: the backup
+  reminder simply never appeared, with nothing to indicate why. The check now strips a trailing
+  `/` from both sides before comparing.
+
 ## [1.6.0] — 2026-07-02
 
 ### Added

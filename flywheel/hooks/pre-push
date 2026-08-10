@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#
+# pre-push — run the memory integrity check before anything leaves the machine.
+#
+# The logic lives in check_memory.sh, which is tracked in this store. This hook
+# is deliberately a thin caller: .git/hooks is git internals and never travels,
+# so on a new machine only these few lines need recreating, not the checks
+# themselves. The runbook recreates them.
+#
+# Blocks the push on failure. Escape hatch: git push --no-verify
+
+set -uo pipefail
+cat > /dev/null # drain the ref list git feeds us on stdin
+
+# Derived from this hook's own location (.git/hooks/pre-push -> repo root), NOT
+# from `git rev-parse --show-toplevel`, which resolves against the caller's CWD
+# and silently points at the wrong repository when the hook is invoked from
+# elsewhere.
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+CHECK="$ROOT/check_memory.sh"
+
+if [ ! -f "$CHECK" ]; then
+  echo "pre-push: WARNING — $CHECK not found." >&2
+  echo "pre-push: pushing WITHOUT the memory integrity check." >&2
+  exit 0
+fi
+
+if ! bash "$CHECK" "$ROOT" >&2; then
+  echo >&2
+  echo "pre-push: refusing to push a broken memory store." >&2
+  exit 1
+fi
+
+exit 0
