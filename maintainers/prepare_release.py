@@ -121,26 +121,45 @@ def has_release_notes(body: str) -> bool:
 
 
 # A squash-merge subject carries the PR number GitHub appends to it, e.g.
-# "feat(flywheel): ship an opt-in durability tier (#41)".
+# "feat(flywheel): ship an opt-in durability tier (#41)". Commits from before this
+# repo went squash-only carry it up front instead: "Merge pull request #28 from …".
 SQUASH_PR_RE = re.compile(r"\(#(\d+)\)$")
+MERGE_PR_RE = re.compile(r"^Merge pull request #(\d+)\b")
 # Any PR reference in the notes counts, so a shared entry like "(#9, #10)" credits both.
 NOTES_PR_RE = re.compile(r"#(\d+)\b")
 
 
-def merged_pr_numbers(since: str | None) -> list[int]:
-    """PR numbers squash-merged since `since` (a tag), oldest first.
+def subject_pr_number(subject: str) -> int | None:
+    """The PR number a commit subject advertises, if it advertises one."""
+    for pattern in (SQUASH_PR_RE, MERGE_PR_RE):
+        m = pattern.search(subject.strip())
+        if m:
+            return int(m[1])
+    return None
 
-    Commits with no `(#N)` suffix — a direct push, or the release commit before
-    its own PR lands — carry no number and are simply not checked.
+
+def merged_pr_numbers(since: str | None) -> list[int]:
+    """PR numbers merged since `since` (a tag), oldest first."""
+    if not since:
+        return []
+    subjects = git("log", f"{since}..HEAD", "--pretty=%s").splitlines()
+    return [n for s in subjects if (n := subject_pr_number(s)) is not None]
+
+
+def unnumbered_subjects(since: str | None) -> list[str]:
+    """Subjects since `since` that name no PR, so nothing can be checked for them.
+
+    Most are legitimate: a direct push, or the release commit before its own PR
+    lands. But this repo's `squash_merge_commit_title` is `COMMIT_OR_PR_TITLE`,
+    and GitHub uses the *commit* subject verbatim when a PR holds a single
+    commit — dependabot's usual shape. Such a merge lands with no `(#N)` at all,
+    which would make the completeness guard pass it in silence. Surfacing these
+    keeps that failure visible instead of silent.
     """
     if not since:
         return []
-    numbers = []
-    for subject in git("log", f"{since}..HEAD", "--pretty=%s").splitlines():
-        m = SQUASH_PR_RE.search(subject.strip())
-        if m:
-            numbers.append(int(m[1]))
-    return numbers
+    subjects = git("log", f"{since}..HEAD", "--pretty=%s").splitlines()
+    return [s.strip() for s in subjects if s.strip() and subject_pr_number(s) is None]
 
 
 def unreferenced_prs(body: str, merged: list[int]) -> list[int]:
@@ -309,6 +328,16 @@ def prepare(
             "  missing from it ships invisible. Add an entry for each (dependabot\n"
             "  PRs included — they never write their own), or re-run with\n"
             "  --allow-missing-entries to cut the release without them."
+        )
+    unnumbered = unnumbered_subjects(latest)
+    if unnumbered:
+        for subject in unnumbered:
+            print(f"  ! no PR number in: {subject}", file=sys.stderr)
+        print(
+            "  ! nothing above could be checked against [Unreleased]. A direct push\n"
+            "    is fine; a squash-merge that lost its '(#N)' is not — confirm those\n"
+            "    are covered before publishing.",
+            file=sys.stderr,
         )
     if working_tree_dirty("CHANGELOG.md"):
         raise ReleaseError(

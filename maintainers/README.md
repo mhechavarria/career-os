@@ -45,11 +45,32 @@ error: merged since v1.6.0 but absent from [Unreleased]: #37, #39
   --allow-missing-entries to cut the release without them.
 ```
 
-It reads the PR numbers off the squash-merge subjects (`git log v<latest>..HEAD`,
-where GitHub appends `(#N)`) and looks for each one anywhere in the `[Unreleased]`
-body, so a single bullet closing several PRs — `(#9, #10)` — credits both. A
-commit with no `(#N)` suffix, such as a direct push or the release commit itself,
-carries no number and is not checked.
+It reads the PR numbers off the commit subjects since the tag (`git log
+v<latest>..HEAD`) — the trailing `(#N)` GitHub appends on squash, or the leading
+`Merge pull request #N` of this repo's pre-squash history — and looks for each one
+anywhere in the `[Unreleased]` body, so a single bullet closing several PRs —
+`(#9, #10)` — credits both.
+
+**What it cannot see.** A commit subject is the only offline source of a PR
+number, and not every merge leaves one. This repo's `squash_merge_commit_title`
+is `COMMIT_OR_PR_TITLE`, so when a PR holds a **single commit** GitHub can take
+that commit's subject verbatim, with no `(#N)` appended at all — dependabot's
+usual shape, and visible in this repo's own history (`chore(deps): bump
+actions/setup-python from 5 to 6` carries no number, while `… from 6 to 7 (#37)`
+does). A maintainer editing the squash subject has the same effect. So the guard
+prints every subject it could not attribute:
+
+```text
+  ! no PR number in: chore(deps): bump actions/checkout from 4 to 6
+  ! nothing above could be checked against [Unreleased]. A direct push
+    is fine; a squash-merge that lost its '(#N)' is not — confirm those
+    are covered before publishing.
+```
+
+That is a warning, not a block, because a direct push to `main` is legitimate and
+carries no number either. **Setting `squash_merge_commit_title` to `PR_TITLE` in
+the repo's merge settings removes the ambiguity at the source** and is worth doing
+if this list is ever noisy.
 
 This lives in the script rather than in a CI job on purpose. A CI check can only
 demand a `CHANGELOG.md` edit from a human author, so **dependabot** would have to

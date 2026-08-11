@@ -13,9 +13,14 @@ mean for a template repo.
 - **`maintainers/prepare_release.py` refuses to cut a release whose notes are incomplete.**
   Phase 1 now reads the PR numbers off every squash-merge subject since the last tag
   (`git log v<latest>..HEAD`, where GitHub appends `(#N)`) and blocks the cut if any of them
-  is never mentioned in `[Unreleased]`, naming the ones it could not find. A single bullet
-  closing several PRs (`(#9, #10)`) credits both, and a commit with no `(#N)` suffix is not
-  checked. The guard lives in the script rather than in a CI job because that is the only
+  is never mentioned in `[Unreleased]`, naming the ones it could not find. The leading
+  `Merge pull request #N` of pre-squash history counts too, and a single bullet closing
+  several PRs (`(#9, #10)`) credits both. A commit subject is the only offline source of a
+  PR number and not every merge leaves one — under `squash_merge_commit_title:
+  COMMIT_OR_PR_TITLE` a single-commit PR can land with no `(#N)` at all, which is
+  dependabot's usual shape — so every subject the guard could not attribute is printed as a
+  warning rather than passed over in silence. The guard lives in the script rather than in a
+  CI job because that is the only
   place it can catch **dependabot** bumps, which will never write an entry for themselves,
   and because a required changelog check would turn a fresh fork's first PR red for no
   reason. `--allow-missing-entries` overrides it deliberately. This is the gap that let the

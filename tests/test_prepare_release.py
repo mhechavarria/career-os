@@ -125,6 +125,54 @@ def test_merged_pr_numbers_reads_squash_subjects(monkeypatch):
     assert pr.merged_pr_numbers("v1.6.0") == [41, 39, 40]
 
 
+def test_merged_pr_numbers_reads_pre_squash_merge_commits(monkeypatch):
+    # history from before the repo went squash-only leads with the number instead
+    log = "Merge pull request #28 from mhechavarria/sync/panda-os-abc123"
+    monkeypatch.setattr(pr, "git", lambda *a, **k: log)
+    assert pr.merged_pr_numbers("v1.2.0") == [28]
+
+
+def test_unnumbered_subjects_surfaces_what_cannot_be_checked(monkeypatch):
+    # `squash_merge_commit_title: COMMIT_OR_PR_TITLE` means a single-commit PR —
+    # dependabot's usual shape — can land with no "(#N)" at all
+    log = "\n".join(
+        [
+            "chore(deps): bump actions/setup-python from 5 to 6",
+            "feat(flywheel): ship an opt-in durability tier (#41)",
+            "Merge pull request #28 from mhechavarria/sync",
+        ]
+    )
+    monkeypatch.setattr(pr, "git", lambda *a, **k: log)
+    assert pr.unnumbered_subjects("v1.6.0") == [
+        "chore(deps): bump actions/setup-python from 5 to 6"
+    ]
+
+
+def test_unnumbered_subjects_skips_git_without_a_prior_tag(monkeypatch):
+    def boom(*a, **k):
+        raise AssertionError("git must not run when there is no tag to diff from")
+
+    monkeypatch.setattr(pr, "git", boom)
+    assert pr.unnumbered_subjects(None) == []
+
+
+def test_main_warns_about_commits_it_cannot_check(tmp_path, monkeypatch, capsys):
+    changelog = tmp_path / "CHANGELOG.md"
+    changelog.write_text(SAMPLE, encoding="utf-8")
+    monkeypatch.setattr(pr, "CHANGELOG", changelog)
+    _stub_git(
+        monkeypatch, unnumbered=("chore(deps): bump actions/checkout from 4 to 6",)
+    )
+
+    rc = pr.main(["--bump", "minor", "--date", "2026-06-05"])
+
+    # a warning, not a block: a direct push is legitimate
+    assert rc == 0
+    err = capsys.readouterr().err
+    assert "no PR number in: chore(deps): bump actions/checkout from 4 to 6" in err
+    assert "lost its '(#N)'" in err
+
+
 def test_merged_pr_numbers_skips_git_without_a_prior_tag(monkeypatch):
     def boom(*a, **k):
         raise AssertionError("git must not run when there is no tag to diff from")
@@ -237,7 +285,13 @@ def test_rewrite_warns_when_no_link_refs(capsys):
 
 
 def _stub_git(
-    monkeypatch, *, latest="v1.3.0", existing_tags=(), dirty=False, merged=()
+    monkeypatch,
+    *,
+    latest="v1.3.0",
+    existing_tags=(),
+    dirty=False,
+    merged=(),
+    unnumbered=(),
 ):
     monkeypatch.setattr(pr, "latest_tag", lambda: latest)
     monkeypatch.setattr(pr, "tag_exists", lambda v: f"v{v}" in existing_tags)
@@ -247,6 +301,7 @@ def _stub_git(
     # unless a test opts into it; otherwise every CLI test would depend on the
     # real git history of whatever checkout the suite runs in.
     monkeypatch.setattr(pr, "merged_pr_numbers", lambda since: list(merged))
+    monkeypatch.setattr(pr, "unnumbered_subjects", lambda since: list(unnumbered))
 
 
 def test_main_rewrites_changelog_file(tmp_path, monkeypatch, capsys):
