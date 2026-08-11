@@ -9,6 +9,8 @@ mean for a template repo.
 
 ## [Unreleased]
 
+## [1.7.0] — 2026-08-10
+
 ### Added
 - **`flywheel/skills/save-memory/SKILL.md` — index-discipline parity.** Step 4 now states a hard
   160-char cap per `MEMORY.md` index line, a rewrite-in-place rule (an updated entry replaces its
@@ -28,6 +30,18 @@ mean for a template repo.
   checked memory store" section. Both scripts are read-only, and both install into the memory
   directory (`check_memory.sh` at its root, the hook in its `.git/hooks/`), still outside this
   repo; the README's "What this never does" bullet is precision-fixed to say so.
+
+### Changed
+- **The dev toolchain and ruff's rule set are now pinned explicitly.** `requirements-dev.txt`
+  pins `ruff==0.16.2`, `pytest==9.1.1` and `pymarkdownlnt==0.9.39` instead of resolving to
+  whatever was newest at CI time, and `ruff.toml` selects `["E4", "E7", "E9", "F"]` rather than
+  inheriting ruff's implicit default. That default is not stable across releases: ruff 0.16
+  dropped `E4` and added isort, refurb, pylint and several flake8 rule sets, which turned CI red
+  on code that had not changed. Pinning one dimension without the other leaves the same trap, so
+  both are pinned — and a fork's first CI run now fails only on rules the fork opted into.
+  Dependabot already covers pip weekly, so upgrades arrive as a reviewable PR instead of as a
+  surprise on an unrelated branch. (#39)
+- Bumped CI GitHub Actions: `actions/setup-python` v7. (#37)
 
 ### Fixed
 - **`flywheel/skills/save-memory/SKILL.md` — the repo-root check no longer false-negatives on a
@@ -235,7 +249,8 @@ mean for a template repo.
 - Project governance: MIT license, contribution guide, code of conduct, security
   policy, PR/issue templates, Dependabot, and CI (lint · test · PDF render).
 
-[Unreleased]: https://github.com/mhechavarria/career-os/compare/v1.6.0...HEAD
+[Unreleased]: https://github.com/mhechavarria/career-os/compare/v1.7.0...HEAD
+[1.7.0]: https://github.com/mhechavarria/career-os/compare/v1.6.0...v1.7.0
 [1.6.0]: https://github.com/mhechavarria/career-os/compare/v1.5.0...v1.6.0
 [1.5.0]: https://github.com/mhechavarria/career-os/compare/v1.4.0...v1.5.0
 [1.4.0]: https://github.com/mhechavarria/career-os/compare/v1.3.0...v1.4.0
