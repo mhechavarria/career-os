@@ -20,11 +20,26 @@ mean for a template repo.
   COMMIT_OR_PR_TITLE` a single-commit PR can land with no `(#N)` at all, which is
   dependabot's usual shape — so every subject the guard could not attribute is printed as a
   warning rather than passed over in silence. The guard lives in the script rather than in a
-  CI job because that is the only
-  place it can catch **dependabot** bumps, which will never write an entry for themselves,
-  and because a required changelog check would turn a fresh fork's first PR red for no
-  reason. `--allow-missing-entries` overrides it deliberately. This is the gap that let the
-  v1.7.0 toolchain pins reach the release branch with no entry at all. (#43)
+  CI job because that is the only place it can catch **dependabot** bumps, which will never
+  write an entry for themselves, and because a required changelog check would turn a fresh
+  fork's first PR red for no reason. `--allow-missing-entries` overrides it deliberately.
+  This is the gap that let the v1.7.0 toolchain pins reach the release branch with no entry
+  at all. (#43)
+- **`UPGRADING.md` — how to move an existing instance to a later release.** Career OS is a
+  template, so a generated repository has its own history and no upstream, and nothing
+  documented how to pick up a new version. The guide leads with the rule that matters: never
+  merge this repository into yours. Unrelated histories turn every shared file into an add/add
+  conflict, so `--allow-unrelated-histories` conflicts your own `cv/master.md` and `lessons.md`
+  against a release that never touched either. Instead it gives a table of which paths are
+  yours versus the framework's, a `git archive <tag> <path> | tar -x` copy step, a
+  verification step, and worked instructions for v1.6.0 → v1.7.0. It also documents the step
+  that is easy to miss: the flywheel skill is installed as a *copy*, so updating the tracked
+  `flywheel/` directory leaves the agent loading the old one with nothing to signal it. That
+  copy may be project-local under the gitignored `.claude/` or global under `~/.claude/`,
+  because the install runbook deliberately skips the project copy when a global skill already
+  exists, so the guide has the reader locate it first and diff rather than overwrite a global
+  skill that is shared across every project. Linked from a new README **Upgrading** section.
+  (#44)
 
 ## [1.7.0] — 2026-08-10
 

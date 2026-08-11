@@ -33,6 +33,7 @@ lock-in, no export button to beg for.
 - [Quick start](#quick-start)
 - [Worked example](#worked-example)
 - [Repository structure](#repository-structure)
+- [Upgrading](#upgrading)
 - [Generate an ATS-compliant PDF](#generate-an-ats-compliant-pdf)
 - [From evidence to CV in 60 seconds](#from-evidence-to-cv-in-60-seconds)
 - [Tooling](#tooling)
@@ -155,6 +156,19 @@ career-os/
 ├── examples/            # Worked sample instance + end-to-end pipeline runner
 └── tests/               # Unit tests for the tooling
 ```
+
+## Upgrading
+
+This is a template, not a dependency: your copy has its own history and no link
+back here, so there is no `git pull` that brings a new version in. To pick up a
+later release, copy the framework files you want and leave your data alone —
+**never merge this repository into yours**, which conflicts your own CV and lessons
+against a release that never touched them.
+
+[**UPGRADING.md**](UPGRADING.md) has the procedure, a table of which paths are
+yours versus the framework's, and the step people miss: re-installing the flywheel
+skill into the gitignored `.claude/`, which a `flywheel/` update does not do for
+you.
 
 ## Generate an ATS-compliant PDF
 
