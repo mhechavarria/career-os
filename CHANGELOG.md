@@ -9,6 +9,18 @@ mean for a template repo.
 
 ## [Unreleased]
 
+### Added
+- **`maintainers/prepare_release.py` refuses to cut a release whose notes are incomplete.**
+  Phase 1 now reads the PR numbers off every squash-merge subject since the last tag
+  (`git log v<latest>..HEAD`, where GitHub appends `(#N)`) and blocks the cut if any of them
+  is never mentioned in `[Unreleased]`, naming the ones it could not find. A single bullet
+  closing several PRs (`(#9, #10)`) credits both, and a commit with no `(#N)` suffix is not
+  checked. The guard lives in the script rather than in a CI job because that is the only
+  place it can catch **dependabot** bumps, which will never write an entry for themselves,
+  and because a required changelog check would turn a fresh fork's first PR red for no
+  reason. `--allow-missing-entries` overrides it deliberately. This is the gap that let the
+  v1.7.0 toolchain pins reach the release branch with no entry at all.
+
 ## [1.7.0] — 2026-08-10
 
 ### Added

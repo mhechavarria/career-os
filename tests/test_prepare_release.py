@@ -109,6 +109,94 @@ def test_unreleased_body_stops_before_link_references():
     assert pr.has_release_notes(pr.unreleased_body(only_refs)) is False
 
 
+# --- changelog completeness (every merged PR must be mentioned) --------------
+
+
+def test_merged_pr_numbers_reads_squash_subjects(monkeypatch):
+    log = "\n".join(
+        [
+            "feat(flywheel): ship an opt-in durability tier (#41)",
+            "chore(ci): pin the dev toolchain (#39)",
+            "a direct push with no PR number",
+            "Revert 'something (#12)' (#40)",  # only the trailing number counts
+        ]
+    )
+    monkeypatch.setattr(pr, "git", lambda *a, **k: log)
+    assert pr.merged_pr_numbers("v1.6.0") == [41, 39, 40]
+
+
+def test_merged_pr_numbers_skips_git_without_a_prior_tag(monkeypatch):
+    def boom(*a, **k):
+        raise AssertionError("git must not run when there is no tag to diff from")
+
+    monkeypatch.setattr(pr, "git", boom)
+    assert pr.merged_pr_numbers(None) == []
+
+
+def test_unreferenced_prs_reports_only_the_gap():
+    body = "\n### Changed\n- Pinned the toolchain. (#39)\n"
+    assert pr.unreferenced_prs(body, [39, 41]) == [41]
+
+
+def test_unreferenced_prs_credits_every_number_in_a_shared_entry():
+    # one bullet can close several PRs: "(#9, #10)" must credit both
+    body = "\n### Added\n- README revamp and the acknowledgements. (#9, #10)\n"
+    assert pr.unreferenced_prs(body, [9, 10]) == []
+
+
+def test_main_blocks_when_a_merged_pr_has_no_entry(tmp_path, monkeypatch, capsys):
+    changelog = tmp_path / "CHANGELOG.md"
+    changelog.write_text(SAMPLE, encoding="utf-8")
+    monkeypatch.setattr(pr, "CHANGELOG", changelog)
+    _stub_git(monkeypatch, merged=(39, 41))
+
+    rc = pr.main(["--bump", "minor", "--date", "2026-06-05"])
+
+    assert rc == 1
+    err = capsys.readouterr().err
+    assert "#39, #41" in err
+    assert "--allow-missing-entries" in err
+    # a failed guard must leave the file untouched
+    assert changelog.read_text(encoding="utf-8") == SAMPLE
+
+
+def test_main_allow_missing_entries_overrides_the_guard(tmp_path, monkeypatch):
+    changelog = tmp_path / "CHANGELOG.md"
+    changelog.write_text(SAMPLE, encoding="utf-8")
+    monkeypatch.setattr(pr, "CHANGELOG", changelog)
+    _stub_git(monkeypatch, merged=(39,))
+
+    rc = pr.main(["--bump", "minor", "--date", "2026-06-05", "--allow-missing-entries"])
+
+    assert rc == 0
+    assert "## [1.4.0] — 2026-06-05" in changelog.read_text(encoding="utf-8")
+
+
+def test_main_passes_when_every_merged_pr_is_credited(tmp_path, monkeypatch):
+    credited = SAMPLE.replace(
+        "- A real change worth releasing.",
+        "- A real change worth releasing. (#39)",
+    )
+    changelog = tmp_path / "CHANGELOG.md"
+    changelog.write_text(credited, encoding="utf-8")
+    monkeypatch.setattr(pr, "CHANGELOG", changelog)
+    _stub_git(monkeypatch, merged=(39,))
+
+    assert pr.main(["--bump", "minor", "--date", "2026-06-05"]) == 0
+
+
+def test_tag_phase_ignores_the_completeness_guard(tmp_path, monkeypatch):
+    # phase 2 runs after the notes already moved into their dated section, so
+    # [Unreleased] is empty by design and the guard must not fire there
+    changelog = tmp_path / "CHANGELOG.md"
+    changelog.write_text(CUT, encoding="utf-8")
+    monkeypatch.setattr(pr, "CHANGELOG", changelog)
+    _stub_git(monkeypatch, merged=(39, 41))
+    monkeypatch.setattr(pr, "git", lambda *a, **k: "")
+
+    assert pr.main(["--version", "1.4.0", "--tag"]) == 0
+
+
 # --- CHANGELOG surgery ------------------------------------------------------
 
 
@@ -148,11 +236,17 @@ def test_rewrite_warns_when_no_link_refs(capsys):
 # --- end-to-end main(), with git stubbed ------------------------------------
 
 
-def _stub_git(monkeypatch, *, latest="v1.3.0", existing_tags=(), dirty=False):
+def _stub_git(
+    monkeypatch, *, latest="v1.3.0", existing_tags=(), dirty=False, merged=()
+):
     monkeypatch.setattr(pr, "latest_tag", lambda: latest)
     monkeypatch.setattr(pr, "tag_exists", lambda v: f"v{v}" in existing_tags)
     monkeypatch.setattr(pr, "working_tree_dirty", lambda pathspec=None: dirty)
     monkeypatch.setattr(pr, "current_branch", lambda: "main")
+    # Default to "no PRs merged since the tag" so the completeness guard is inert
+    # unless a test opts into it; otherwise every CLI test would depend on the
+    # real git history of whatever checkout the suite runs in.
+    monkeypatch.setattr(pr, "merged_pr_numbers", lambda since: list(merged))
 
 
 def test_main_rewrites_changelog_file(tmp_path, monkeypatch, capsys):
