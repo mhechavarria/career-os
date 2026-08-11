@@ -33,9 +33,13 @@ mean for a template repo.
   against a release that never touched either. Instead it gives a table of which paths are
   yours versus the framework's, a `git archive <tag> <path> | tar -x` copy step, a
   verification step, and worked instructions for v1.6.0 → v1.7.0. It also documents the step
-  that is easy to miss: the flywheel skill is installed into the gitignored `.claude/`, so
-  updating the tracked `flywheel/` directory leaves the agent loading the old copy with
-  nothing to signal it. Linked from a new README **Upgrading** section. (#44)
+  that is easy to miss: the flywheel skill is installed as a *copy*, so updating the tracked
+  `flywheel/` directory leaves the agent loading the old one with nothing to signal it. That
+  copy may be project-local under the gitignored `.claude/` or global under `~/.claude/`,
+  because the install runbook deliberately skips the project copy when a global skill already
+  exists, so the guide has the reader locate it first and diff rather than overwrite a global
+  skill that is shared across every project. Linked from a new README **Upgrading** section.
+  (#44)
 
 ## [1.7.0] — 2026-08-10
 

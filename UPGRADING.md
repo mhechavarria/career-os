@@ -87,12 +87,11 @@ git diff
 git add flywheel && git commit -m "chore: update flywheel to career-os v1.7.0"
 ```
 
-### 4. Re-install the flywheel skill, if you use it
+### 4. Update the flywheel skill, if you use it
 
-**This is the step that is easy to miss.** The flywheel skill is *installed* by
-copying it into `.claude/skills/save-memory/`, and `.claude/` is gitignored.
-Updating the tracked `flywheel/` directory therefore does **not** update the copy
-your agent actually loads — it silently keeps running the old one:
+**This is the step that is easy to miss.** The flywheel skill is *installed* as a
+copy, so updating the tracked `flywheel/` directory does **not** update the copy
+your agent actually loads. It silently keeps running the old one:
 
 ```console
 $ wc -l flywheel/skills/save-memory/SKILL.md .claude/skills/save-memory/SKILL.md
@@ -100,11 +99,33 @@ $ wc -l flywheel/skills/save-memory/SKILL.md .claude/skills/save-memory/SKILL.md
    49 .claude/skills/save-memory/SKILL.md           # what the agent loads
 ```
 
-Re-copy it after every flywheel update:
+**Find where yours lives before copying anything.** The install runbook checks for
+a global skill first and deliberately *skips* the project copy when one exists, so
+the file may be in either place — or neither:
+
+```bash
+ls -d ~/.claude/skills/save-memory .claude/skills/save-memory 2>/dev/null
+```
+
+**Project-local** (`.claude/skills/save-memory/`) — re-copy it:
 
 ```bash
 cp flywheel/skills/save-memory/SKILL.md .claude/skills/save-memory/
 ```
+
+**Global** (`~/.claude/skills/save-memory/`) — that copy is shared by every project
+on your machine and may not have come from Career OS at all, so diff it rather than
+overwriting it:
+
+```bash
+diff ~/.claude/skills/save-memory/SKILL.md flywheel/skills/save-memory/SKILL.md
+```
+
+Take the parts you want. If it turns out to be an unmodified Career OS copy, copying
+over it is fine.
+
+**Neither** — the skill was never installed, and there is nothing to update. See
+[`flywheel/README.md`](flywheel/README.md) if you want it.
 
 If the release also changed `flywheel/check_memory.sh` or `flywheel/hooks/pre-push`,
 re-install those into your memory directory too, and re-apply `chmod +x` — see
@@ -128,8 +149,10 @@ skill re-install covers it:
 ```bash
 git fetch template --tags
 git archive v1.7.0 flywheel | tar -x
-cp flywheel/skills/save-memory/SKILL.md .claude/skills/save-memory/   # if installed
 ```
+
+Then update your installed `save-memory` skill per [step 4](#4-update-the-flywheel-skill-if-you-use-it)
+— project-local, global, or not installed at all, and the answer decides the command.
 
 That brings the `save-memory` index-discipline rules and the optional durability
 tier (`check_memory.sh` and the `pre-push` hook). The remaining changes —
