@@ -89,6 +89,12 @@ moves `[Unreleased]` into a dated `[X.Y.Z]` section, refreshes the compare links
 and refuses to proceed on a dirty tree, a duplicate/older version, or an empty
 `[Unreleased]`. Open a PR and squash-merge it.
 
+It also refuses to cut a release when a PR merged since the last tag is missing
+from `[Unreleased]` — the notes are generated from that section, so anything absent
+ships invisible. Write the entry (dependabot's bumps included, since it never writes
+its own); `--allow-missing-entries` is a deliberate override, not the normal path.
+See [`maintainers/README.md`](maintainers/README.md#the-changelog-completeness-guard).
+
 **Phase 2 — once merged, from an up-to-date `main`**, tag and push:
 
 ```bash

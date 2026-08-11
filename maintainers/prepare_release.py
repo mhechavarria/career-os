@@ -11,6 +11,14 @@ the error-prone CHANGELOG surgery for you:
   * refresh the Keep-a-Changelog link references at the foot of the file (point
     ``[Unreleased]`` at the new tag and add the ``[X.Y.Z]`` compare link).
 
+It also adds one guard of its own: every PR squash-merged since the last tag must
+be mentioned in ``[Unreleased]``. The release notes are generated from that
+section, so a PR that merged without an entry ships invisible — which is exactly
+how the toolchain pins of #39 nearly went out unannounced. The check runs here
+rather than in CI because it is the only place that catches **dependabot** PRs,
+which will never write an entry for themselves. Override it deliberately with
+``--allow-missing-entries``.
+
 It never pushes and never creates the GitHub Release — ``release.yml`` does that
 from the CHANGELOG when the tag is pushed.
 
@@ -112,6 +120,54 @@ def has_release_notes(body: str) -> bool:
     return False
 
 
+# A squash-merge subject carries the PR number GitHub appends to it, e.g.
+# "feat(flywheel): ship an opt-in durability tier (#41)". Commits from before this
+# repo went squash-only carry it up front instead: "Merge pull request #28 from …".
+SQUASH_PR_RE = re.compile(r"\(#(\d+)\)$")
+MERGE_PR_RE = re.compile(r"^Merge pull request #(\d+)\b")
+# Any PR reference in the notes counts, so a shared entry like "(#9, #10)" credits both.
+NOTES_PR_RE = re.compile(r"#(\d+)\b")
+
+
+def subject_pr_number(subject: str) -> int | None:
+    """The PR number a commit subject advertises, if it advertises one."""
+    for pattern in (SQUASH_PR_RE, MERGE_PR_RE):
+        m = pattern.search(subject.strip())
+        if m:
+            return int(m[1])
+    return None
+
+
+def merged_pr_numbers(since: str | None) -> list[int]:
+    """PR numbers merged since `since` (a tag), oldest first."""
+    if not since:
+        return []
+    subjects = git("log", f"{since}..HEAD", "--pretty=%s").splitlines()
+    return [n for s in subjects if (n := subject_pr_number(s)) is not None]
+
+
+def unnumbered_subjects(since: str | None) -> list[str]:
+    """Subjects since `since` that name no PR, so nothing can be checked for them.
+
+    Most are legitimate: a direct push, or the release commit before its own PR
+    lands. But this repo's `squash_merge_commit_title` is `COMMIT_OR_PR_TITLE`,
+    and GitHub uses the *commit* subject verbatim when a PR holds a single
+    commit — dependabot's usual shape. Such a merge lands with no `(#N)` at all,
+    which would make the completeness guard pass it in silence. Surfacing these
+    keeps that failure visible instead of silent.
+    """
+    if not since:
+        return []
+    subjects = git("log", f"{since}..HEAD", "--pretty=%s").splitlines()
+    return [s.strip() for s in subjects if s.strip() and subject_pr_number(s) is None]
+
+
+def unreferenced_prs(body: str, merged: list[int]) -> list[int]:
+    """Merged PR numbers that the [Unreleased] notes never mention."""
+    referenced = {int(n) for n in NOTES_PR_RE.findall(body)}
+    return sorted(set(merged) - referenced)
+
+
 def rewrite_changelog(text: str, version: str, date: str) -> str:
     """Move [Unreleased] into a dated [version] section and refresh link refs."""
     if re.search(rf"^## \[{re.escape(version)}\]", text, re.M):
@@ -205,6 +261,12 @@ def parse_args(argv: list[str] | None = None) -> argparse.Namespace:
     parser.add_argument(
         "--date", default=None, help="release date YYYY-MM-DD (default: today)"
     )
+    parser.add_argument(
+        "--allow-missing-entries",
+        action="store_true",
+        help="cut the release even if a PR merged since the last tag has no "
+        "[Unreleased] entry (deliberate override, not a default)",
+    )
     # --commit and --tag are separate release phases — never both at once.
     phase = parser.add_mutually_exclusive_group()
     phase.add_argument(
@@ -243,7 +305,13 @@ def print_prepare_steps(version: str, commit: bool) -> None:
     )
 
 
-def prepare(version: str, latest: str | None, date: str | None, commit: bool) -> int:
+def prepare(
+    version: str,
+    latest: str | None,
+    date: str | None,
+    commit: bool,
+    allow_missing_entries: bool = False,
+) -> int:
     """Phase 1: rewrite CHANGELOG.md (and optionally commit) on a release branch."""
     assert_increasing(version, latest)
     if tag_exists(version):
@@ -251,6 +319,26 @@ def prepare(version: str, latest: str | None, date: str | None, commit: bool) ->
     text = CHANGELOG.read_text(encoding="utf-8")
     if not has_release_notes(unreleased_body(text)):
         raise ReleaseError("the [Unreleased] section is empty — nothing to release")
+    missing = unreferenced_prs(unreleased_body(text), merged_pr_numbers(latest))
+    if missing and not allow_missing_entries:
+        listed = ", ".join(f"#{n}" for n in missing)
+        raise ReleaseError(
+            f"merged since {latest} but absent from [Unreleased]: {listed}\n"
+            "  The release notes are generated from that section, so whatever is\n"
+            "  missing from it ships invisible. Add an entry for each (dependabot\n"
+            "  PRs included — they never write their own), or re-run with\n"
+            "  --allow-missing-entries to cut the release without them."
+        )
+    unnumbered = unnumbered_subjects(latest)
+    if unnumbered:
+        for subject in unnumbered:
+            print(f"  ! no PR number in: {subject}", file=sys.stderr)
+        print(
+            "  ! nothing above could be checked against [Unreleased]. A direct push\n"
+            "    is fine; a squash-merge that lost its '(#N)' is not — confirm those\n"
+            "    are covered before publishing.",
+            file=sys.stderr,
+        )
     if working_tree_dirty("CHANGELOG.md"):
         raise ReleaseError(
             "CHANGELOG.md has uncommitted changes — commit or stash first"
@@ -313,7 +401,9 @@ def main(argv: list[str] | None = None) -> int:
         version = resolve_version(latest, args.version, args.bump)
         if args.tag:
             return tag_release(version, latest)
-        return prepare(version, latest, args.date, args.commit)
+        return prepare(
+            version, latest, args.date, args.commit, args.allow_missing_entries
+        )
     except ReleaseError as err:
         print(f"error: {err}", file=sys.stderr)
         return 1
