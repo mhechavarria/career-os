@@ -35,7 +35,7 @@ mean for a template repo.
   verification step, and worked instructions for v1.6.0 → v1.7.0. It also documents the step
   that is easy to miss: the flywheel skill is installed into the gitignored `.claude/`, so
   updating the tracked `flywheel/` directory leaves the agent loading the old copy with
-  nothing to signal it. Linked from a new README **Upgrading** section.
+  nothing to signal it. Linked from a new README **Upgrading** section. (#44)
 
 ## [1.7.0] — 2026-08-10
 
