@@ -19,7 +19,7 @@ mean for a template repo.
   place it can catch **dependabot** bumps, which will never write an entry for themselves,
   and because a required changelog check would turn a fresh fork's first PR red for no
   reason. `--allow-missing-entries` overrides it deliberately. This is the gap that let the
-  v1.7.0 toolchain pins reach the release branch with no entry at all.
+  v1.7.0 toolchain pins reach the release branch with no entry at all. (#43)
 
 ## [1.7.0] — 2026-08-10
 
