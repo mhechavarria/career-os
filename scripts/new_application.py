@@ -46,18 +46,6 @@ def slugify(text: str) -> str:
     return text.strip("-")
 
 
-def extract_name_slug(cv_path: Path) -> str:
-    """Extract candidate name from the CV's first H1 heading and slugify it."""
-    try:
-        text = cv_path.read_text(encoding="utf-8")
-        match = re.search(r"^# (.+)$", text, re.MULTILINE)
-        if match:
-            return slugify(match.group(1).strip())
-    except Exception:
-        pass
-    return "cv"
-
-
 def main():
     parser = argparse.ArgumentParser(
         description="Bootstrap a new job application file."
@@ -160,26 +148,33 @@ def main():
     if not args.no_pdf:
         cv_path = REPO_ROOT / args.cv
         if cv_path.exists():
-            # Same convention as generate_cv.py: <name>-<cv-stem>.pdf. These two
-            # disagreed once — this built <name>-<company>.pdf while the generator
-            # defaulted to <name>-<cv-stem>.pdf — and every application produced two
-            # PDFs of the same CV under different slugs. Keep them identical.
-            name_slug = extract_name_slug(cv_path)
-            pdf_name = f"{name_slug}-{cv_path.stem}.pdf"
-            pdf_path = cv_path.parent / pdf_name
+            # Let generate_cv.py name the file and report where it put it, rather
+            # than predicting the name here. Predicting it means a second copy of
+            # the naming rule, and the two drifted once already — this built
+            # <name>-<company>.pdf while the generator defaulted to
+            # <name>-<cv-stem>.pdf, so every application produced two PDFs of the
+            # same CV. One owner of the rule is the only version that cannot drift.
             result = subprocess.run(
                 [
                     sys.executable,
                     str(REPO_ROOT / "scripts" / "generate_cv.py"),
                     str(cv_path),
-                    "--output",
-                    str(pdf_path),
                 ],
                 capture_output=True,
                 text=True,
             )
             if result.returncode == 0:
-                cv_pdf_ref = f"{Path(args.cv).parent}/{pdf_name}"
+                done = re.search(r"Done →\s+(\S.*?)\s+\(\d+ pages?\)", result.stdout)
+                if done:
+                    pdf_path = Path(done.group(1))
+                    with contextlib.suppress(ValueError):
+                        cv_pdf_ref = str(pdf_path.relative_to(REPO_ROOT).as_posix())
+                if cv_pdf_ref == "null":
+                    print(
+                        "Warning: could not read the rendered PDF path from "
+                        "generate_cv.py output",
+                        file=sys.stderr,
+                    )
                 if result.stderr.strip():
                     print(result.stderr.strip(), file=sys.stderr)
             else:
