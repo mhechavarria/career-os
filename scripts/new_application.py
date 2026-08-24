@@ -4,18 +4,19 @@ new_application.py — bootstrap a new job application file
 
 Usage:
     python3 scripts/new_application.py \
-      --company "Nango" \
+      --company "Acme" \
       --role "Staff Backend Engineer" \
-      --cv cv/versions/nango-staff-backend.md \
+      --cv cv/versions/acme-staff-backend.md \
       --level Staff \
       --source LinkedIn \
-      [--jd jds/nango-staff-backend.txt] \
+      [--jd jds/acme-staff-backend.txt] \
       [--url "https://..."] \
       [--remote] \
       [--no-pdf]
 
-A company-named PDF is generated automatically alongside the application file,
-e.g. cv/versions/mariano-echavarria-nango.pdf. Pass --no-pdf to skip.
+A PDF is generated automatically alongside the application file, named the same
+way generate_cv.py names it: <your-name>-<cv-stem>.pdf, e.g.
+cv/versions/<your-name>-acme-staff-backend.pdf. Pass --no-pdf to skip.
 """
 
 import argparse
@@ -159,8 +160,12 @@ def main():
     if not args.no_pdf:
         cv_path = REPO_ROOT / args.cv
         if cv_path.exists():
+            # Same convention as generate_cv.py: <name>-<cv-stem>.pdf. These two
+            # disagreed once — this built <name>-<company>.pdf while the generator
+            # defaulted to <name>-<cv-stem>.pdf — and every application produced two
+            # PDFs of the same CV under different slugs. Keep them identical.
             name_slug = extract_name_slug(cv_path)
-            pdf_name = f"{name_slug}-{company_slug}.pdf"
+            pdf_name = f"{name_slug}-{cv_path.stem}.pdf"
             pdf_path = cv_path.parent / pdf_name
             result = subprocess.run(
                 [
@@ -201,7 +206,7 @@ cv_pdf: {cv_pdf_ref}
 applied_date: {today.isoformat()}
 status: active
 stage: applied
-keyword_coverage: {coverage if coverage is not None else "null"}
+tech_keyword_coverage: {coverage if coverage is not None else "null"}
 resume_worded_score: null
 salary_min: null
 salary_max: null
@@ -250,7 +255,7 @@ tags: []
     rel = out_path.relative_to(REPO_ROOT)
     print(f"\nCreated: {rel}")
     if coverage is not None:
-        print(f"    Keyword coverage: {coverage}%")
+        print(f"    Tech keyword coverage: {coverage}%")
     if cv_pdf_ref != "null":
         print(f"    PDF: {cv_pdf_ref}")
     if jd_file_ref == "null":
