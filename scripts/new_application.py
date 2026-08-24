@@ -4,18 +4,19 @@ new_application.py — bootstrap a new job application file
 
 Usage:
     python3 scripts/new_application.py \
-      --company "Nango" \
+      --company "Acme" \
       --role "Staff Backend Engineer" \
-      --cv cv/versions/nango-staff-backend.md \
+      --cv cv/versions/acme-staff-backend.md \
       --level Staff \
       --source LinkedIn \
-      [--jd jds/nango-staff-backend.txt] \
+      [--jd jds/acme-staff-backend.txt] \
       [--url "https://..."] \
       [--remote] \
       [--no-pdf]
 
-A company-named PDF is generated automatically alongside the application file,
-e.g. cv/versions/mariano-echavarria-nango.pdf. Pass --no-pdf to skip.
+A PDF is generated automatically alongside the application file, named the same
+way generate_cv.py names it: <your-name>-<cv-stem>.pdf, e.g.
+cv/versions/<your-name>-acme-staff-backend.pdf. Pass --no-pdf to skip.
 """
 
 import argparse
@@ -43,18 +44,6 @@ def slugify(text: str) -> str:
     text = text.lower()
     text = re.sub(r"[^a-z0-9]+", "-", text)
     return text.strip("-")
-
-
-def extract_name_slug(cv_path: Path) -> str:
-    """Extract candidate name from the CV's first H1 heading and slugify it."""
-    try:
-        text = cv_path.read_text(encoding="utf-8")
-        match = re.search(r"^# (.+)$", text, re.MULTILINE)
-        if match:
-            return slugify(match.group(1).strip())
-    except Exception:
-        pass
-    return "cv"
 
 
 def main():
@@ -159,22 +148,33 @@ def main():
     if not args.no_pdf:
         cv_path = REPO_ROOT / args.cv
         if cv_path.exists():
-            name_slug = extract_name_slug(cv_path)
-            pdf_name = f"{name_slug}-{company_slug}.pdf"
-            pdf_path = cv_path.parent / pdf_name
+            # Let generate_cv.py name the file and report where it put it, rather
+            # than predicting the name here. Predicting it means a second copy of
+            # the naming rule, and the two drifted once already — this built
+            # <name>-<company>.pdf while the generator defaulted to
+            # <name>-<cv-stem>.pdf, so every application produced two PDFs of the
+            # same CV. One owner of the rule is the only version that cannot drift.
             result = subprocess.run(
                 [
                     sys.executable,
                     str(REPO_ROOT / "scripts" / "generate_cv.py"),
                     str(cv_path),
-                    "--output",
-                    str(pdf_path),
                 ],
                 capture_output=True,
                 text=True,
             )
             if result.returncode == 0:
-                cv_pdf_ref = f"{Path(args.cv).parent}/{pdf_name}"
+                done = re.search(r"Done →\s+(\S.*?)\s+\(\d+ pages?\)", result.stdout)
+                if done:
+                    pdf_path = Path(done.group(1))
+                    with contextlib.suppress(ValueError):
+                        cv_pdf_ref = str(pdf_path.relative_to(REPO_ROOT).as_posix())
+                if cv_pdf_ref == "null":
+                    print(
+                        "Warning: could not read the rendered PDF path from "
+                        "generate_cv.py output",
+                        file=sys.stderr,
+                    )
                 if result.stderr.strip():
                     print(result.stderr.strip(), file=sys.stderr)
             else:
@@ -201,7 +201,7 @@ cv_pdf: {cv_pdf_ref}
 applied_date: {today.isoformat()}
 status: active
 stage: applied
-keyword_coverage: {coverage if coverage is not None else "null"}
+tech_keyword_coverage: {coverage if coverage is not None else "null"}
 resume_worded_score: null
 salary_min: null
 salary_max: null
@@ -250,7 +250,7 @@ tags: []
     rel = out_path.relative_to(REPO_ROOT)
     print(f"\nCreated: {rel}")
     if coverage is not None:
-        print(f"    Keyword coverage: {coverage}%")
+        print(f"    Tech keyword coverage: {coverage}%")
     if cv_pdf_ref != "null":
         print(f"    PDF: {cv_pdf_ref}")
     if jd_file_ref == "null":

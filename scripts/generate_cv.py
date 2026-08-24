@@ -3,13 +3,18 @@
 generate_cv.py — ATS-compliant PDF generator for Career OS CV files.
 
 Usage:
-    python3 scripts/generate_cv.py cv/versions/nango-staff-backend.md
+    python3 scripts/generate_cv.py cv/versions/acme-staff-backend.md
+        → cv/versions/<your-name>-acme-staff-backend.pdf
     python3 scripts/generate_cv.py cv/master.md --output ~/Desktop/cv.pdf
+
+The output filename is prefixed with your name, read from the CV itself, so the
+file a recruiter receives identifies whose CV it is.
 """
 
 import argparse
 import re
 import sys
+import unicodedata
 from pathlib import Path
 
 
@@ -187,6 +192,48 @@ def to_pdf(html: str, output_path: Path) -> int:
 
 
 # ---------------------------------------------------------------------------
+# Output naming — the file a recruiter receives carries the candidate's name
+# ---------------------------------------------------------------------------
+
+
+def name_slug(text: str) -> str:
+    """Slugify the candidate's name, read from the document itself.
+
+    Two shapes ship with this template and both are handled, in priority order:
+    a tailored CV opens with the name as its H1, while the master opens with a
+    document title ("Master CV (Source of Truth)") and carries the name in a
+    `**Name:**` field under Contact. Checking the explicit field first means a
+    document title is never mistaken for a person.
+
+    Read from the document rather than configured anywhere, so a fork gets its
+    own owner's name with nothing to set up.
+    """
+    field = re.search(r"^[-*]?\s*\*\*Name:\*\*\s*(.+)$", text, re.MULTILINE)
+    heading = field or re.search(r"^#\s+(.+)$", text, re.MULTILINE)
+    if not heading:
+        return ""
+    slug = unicodedata.normalize("NFKD", heading.group(1).strip())
+    slug = slug.encode("ascii", "ignore").decode("ascii").lower()
+    slug = re.sub(r"[^a-z0-9]+", "-", slug).strip("-")
+    return slug
+
+
+def default_output_path(input_path: Path, clean_text: str) -> Path:
+    """Prefix the PDF filename with the candidate's name.
+
+    `acme-staff-backend.md` becomes `<your-name>-acme-staff-backend.pdf`, because
+    the PDF leaves the repo and a file called `acme-staff-backend.pdf` tells the
+    person who opens it nothing about whose CV it is. The markdown keeps its short
+    stem: it never leaves, and renaming it would break every reference to it.
+    """
+    stem = input_path.stem
+    slug = name_slug(clean_text)
+    if slug and not stem.startswith(slug):
+        stem = f"{slug}-{stem}"
+    return input_path.with_name(f"{stem}.pdf")
+
+
+# ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
 
@@ -199,7 +246,10 @@ def main() -> None:
     parser.add_argument(
         "--output",
         "-o",
-        help="Output PDF path (default: same location as input, .pdf extension)",
+        help=(
+            "Output PDF path (default: same directory as the input, named "
+            "<candidate-name>-<input-stem>.pdf)"
+        ),
     )
     args = parser.parse_args()
 
@@ -208,15 +258,17 @@ def main() -> None:
         print(f"Error: file not found: {input_path}", file=sys.stderr)
         sys.exit(1)
 
-    output_path = (
-        Path(args.output).resolve() if args.output else input_path.with_suffix(".pdf")
-    )
-
     print(f"Reading  {input_path}")
 
     raw = input_path.read_text(encoding="utf-8")
     clean = preprocess(raw)
     validate_ats(clean, input_path.name)
+
+    output_path = (
+        Path(args.output).resolve()
+        if args.output
+        else default_output_path(input_path, clean)
+    )
 
     html = to_html(clean)
     output_path.parent.mkdir(parents=True, exist_ok=True)
