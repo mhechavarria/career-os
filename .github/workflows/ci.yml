@@ -68,12 +68,20 @@ jobs:
             echo "::error::Skeleton CV produced ATS warnings — fix cv/master.md"
             exit 1
           fi
-          test -s cv/master.pdf
+          # The output filename is prefixed with the candidate's name, read from
+          # the CV itself, so take the path the generator reports rather than
+          # assuming cv/master.pdf.
+          pdf=$(echo "$out" | sed -n 's/^Done →[[:space:]]*\(.*\) ([0-9]* page.*$/\1/p')
+          if [ -z "$pdf" ]; then
+            echo "::error::Could not read the rendered PDF path from generate_cv.py output"
+            exit 1
+          fi
+          test -s "$pdf"
       - name: Upload rendered PDF
         uses: actions/upload-artifact@v7
         with:
           name: skeleton-cv
-          path: cv/master.pdf
+          path: cv/*master.pdf
 
   example-pipeline:
     name: End-to-end pipeline (sample-candidate)

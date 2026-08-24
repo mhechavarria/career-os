@@ -123,8 +123,18 @@ def main() -> int:
     banner("STAGE 1 — generate_cv.py (render ATS PDFs)")
     for cv in ["cv/master.md", *TAILORED_CVS]:
         proc = run(work, ["scripts/generate_cv.py", cv])
-        pdf = work / Path(cv).with_suffix(".pdf")
-        ok = proc.returncode == 0 and pdf.exists() and pdf.stat().st_size > 0
+        # Read the path the generator reports rather than deriving it. The
+        # default output is prefixed with the candidate's name, taken from the
+        # CV itself, so it is not the input stem with .pdf swapped on. Stage 3
+        # already reads its path from stdout for the same reason.
+        done = re.search(r"Done →\s+(\S.*?)\s+\(\d+ pages?\)", proc.stdout)
+        pdf = Path(done.group(1)) if done else None
+        ok = (
+            proc.returncode == 0
+            and pdf is not None
+            and pdf.exists()
+            and pdf.stat().st_size > 0
+        )
         warn = "ATS WARNINGS" in proc.stderr
         page = re.search(r"\((\d+) pages?\)", proc.stdout)
         detail = f"{page.group(0) if page else '?'}{'  [ATS warnings]' if warn else ''}"
