@@ -9,7 +9,7 @@ application moves from Active to Closed purely by advancing its `stage`. -->
 ## Active
 
 ```dataview
-TABLE company, role, level, applied_date, stage, keyword_coverage, resume_worded_score, source
+TABLE company, role, level, applied_date, stage, tech_keyword_coverage, resume_worded_score, source
 FROM "applications"
 WHERE type = "application" AND !contains(list("rejected", "ghosted", "withdrawn"), stage)
 SORT applied_date DESC
