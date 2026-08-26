@@ -201,6 +201,7 @@ cv_pdf: {cv_pdf_ref}
 applied_date: {today.isoformat()}
 status: active
 stage: applied
+furthest_stage: applied
 tech_keyword_coverage: {coverage if coverage is not None else "null"}
 resume_worded_score: null
 salary_min: null

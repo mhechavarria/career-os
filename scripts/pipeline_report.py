@@ -32,6 +32,50 @@ STAGES_ORDER = [
 # application advanced all the way through, so it counts as progress.
 CLOSED_STAGES = {"rejected", "ghosted", "withdrawn"}
 
+# Pre-submission stages. A file in one of these is tailored work in progress
+# that was never sent, so it has no outcome to measure: counting it as an
+# application would depress every conversion rate and counting it as a screen
+# would inflate CV performance. It stays out of both and is reported separately.
+PRE_SUBMISSION_STAGES = {"draft"}
+
+# Current-state stages that are not positions in the lifecycle: the application
+# is parked by the employer, not advancing and not closed. `furthest_stage` is
+# what records how far it had got before it stopped.
+PARKED_STAGES = {"on-hold"}
+
+# The whole vocabulary. Anything outside it is a typo or an invented stage, and
+# an unrecognised stage silently skews the rates below — which is exactly how
+# `on-hold` came to be counted as a screen in one table and not the other.
+KNOWN_STAGES = set(STAGES_ORDER) | CLOSED_STAGES | PRE_SUBMISSION_STAGES | PARKED_STAGES
+
+# Every stage at or past a first conversation. One definition, used by both the
+# outcome signals and the CV performance table — they used to disagree.
+SCREENED_STAGES = set(STAGES_ORDER[1:])
+
+
+def furthest_stage(app: dict) -> str:
+    """How far an application GOT, independent of where it now IS.
+
+    `stage` records current state, so a rejection, a freeze or a withdrawal
+    overwrites the high-water mark. An application that reached a recruiter
+    screen and then closed on an eligibility gap, and one that screened before
+    the employer froze the requisition, both look under `stage` alone as though
+    they never got past the application. The reach is therefore recorded
+    separately in `furthest_stage`.
+    """
+    # A pre-submission file has no reach at all, and must never inherit one
+    # from the fallback below.
+    if str(app.get("stage", "applied")) in PRE_SUBMISSION_STAGES:
+        return ""
+    declared = str(app.get("furthest_stage") or "").strip()
+    if declared and declared != "null":
+        return declared
+    # A file predating the field, or parked in a non-lifecycle stage, is
+    # credited only with what `stage` can prove on its own.
+    stage = str(app.get("stage", "applied"))
+    return stage if stage in STAGES_ORDER else "applied"
+
+
 SECTION_MAP = {
     "observability": "Summary or Skills",
     "platform engineering": "Summary or Skills",
@@ -95,7 +139,32 @@ def main():
         print("No application files found. Run new_application.py to add one.")
         return
 
-    total = len(apps)
+    # Drafts were tailored but never submitted. Keep them in the gap analysis
+    # (the CV work is real) and out of every outcome rate (the outcome is not).
+    drafts = [
+        a for a in apps if str(a.get("stage", "applied")) in PRE_SUBMISSION_STAGES
+    ]
+    submitted = [a for a in apps if a not in drafts]
+
+    tailored = len(apps)
+    total = len(submitted)
+
+    for app in apps:
+        company = app.get("company", "unknown")
+        stage = str(app.get("stage", "applied"))
+        if stage not in KNOWN_STAGES:
+            print(
+                f"Warning: {company} has an unrecognised stage '{stage}' "
+                f"— it will not count toward any rate",
+                file=sys.stderr,
+            )
+        reach = str(app.get("furthest_stage") or "").strip()
+        if reach and reach != "null" and reach not in STAGES_ORDER:
+            print(
+                f"Warning: {company} has an unrecognised furthest_stage "
+                f"'{reach}' — expected one of {', '.join(STAGES_ORDER)}",
+                file=sys.stderr,
+            )
 
     # Missing keyword aggregation
     missing_counter: Counter = Counter()
@@ -117,20 +186,22 @@ def main():
                 missing_counter[term] += 1
 
     # Outcome signals
-    stage_counts: Counter = Counter(str(a.get("stage", "applied")) for a in apps)
-    screened = sum(stage_counts.get(s, 0) for s in STAGES_ORDER[1:])
-    technical = sum(stage_counts.get(s, 0) for s in STAGES_ORDER[2:])
-    placed = stage_counts.get("placed", 0)
+    # Counted on reach, not on current state: an application that screened and
+    # was then rejected still screened.
+    reach_counts: Counter = Counter(furthest_stage(a) for a in submitted)
+    screened = sum(reach_counts.get(s, 0) for s in STAGES_ORDER[1:])
+    technical = sum(reach_counts.get(s, 0) for s in STAGES_ORDER[2:])
+    placed = reach_counts.get("placed", 0)
     # A placement implies an offer, so count it toward offers too.
-    offers = stage_counts.get("offer", 0) + placed
+    offers = reach_counts.get("offer", 0) + placed
 
     # CV version performance
     cv_perf: dict = {}
-    for app in apps:
+    for app in submitted:
         cv = str(app.get("cv_version", "unknown"))
         cv_perf.setdefault(cv, {"apps": 0, "screens": 0})
         cv_perf[cv]["apps"] += 1
-        if str(app.get("stage", "applied")) not in {"applied"} | CLOSED_STAGES:
+        if furthest_stage(app) in SCREENED_STAGES:
             cv_perf[cv]["screens"] += 1
 
     # Print report. The missing-keyword aggregate below is computed across each
@@ -141,12 +212,17 @@ def main():
         for term, count in missing_counter.most_common(20):
             priority = "!!" if count >= 3 else " !"
             section = SECTION_MAP.get(term, "Skills section")
-            print(f"  {priority} [{count:2d}/{total} apps]  {term:<32} → {section}")
+            print(f"  {priority} [{count:2d}/{tailored} apps]  {term:<32} → {section}")
     else:
         print("  No JD files linked yet — add jd_file paths to application frontmatter")
 
     print("\n=== OUTCOME SIGNALS ===")
     print(f"  Applications:     {total}")
+    for draft in drafts:
+        print(
+            f"  ! NOT SUBMITTED:  {draft.get('company', 'unknown')}"
+            f" — {draft.get('role', 'unknown')} (stage: draft, excluded from rates)"
+        )
     print(f"  Phone screen:     {screened:3d}  {pct(screened, total)}")
     print(
         f"  Technical round:  {technical:3d}  {pct(technical, screened) if screened else ''}"
