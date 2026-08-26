@@ -257,7 +257,12 @@ tags: []
     if jd_file_ref == "null":
         print(f"\n  Add JD to jds/{slug}.txt then run:")
         print(f"    python3 scripts/jd_gap.py jds/{slug}.txt {args.cv}")
-    print("\n  Update 'stage' in frontmatter as the application progresses.")
+    print(
+        "\n  As the application progresses, update 'stage' to where it IS,"
+        "\n  and advance 'furthest_stage' the moment a round is HELD."
+        "\n  'stage' moves back on a rejection; 'furthest_stage' never does,"
+        "\n  and the conversion rates are computed from it."
+    )
     print("  Run python3 scripts/pipeline_report.py for aggregate insights.\n")
 
 

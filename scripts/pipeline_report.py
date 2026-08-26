@@ -62,18 +62,30 @@ def furthest_stage(app: dict) -> str:
     the employer froze the requisition, both look under `stage` alone as though
     they never got past the application. The reach is therefore recorded
     separately in `furthest_stage`.
+
+    It is a HIGH-WATER MARK, so it is whichever of the two fields is further
+    along the lifecycle, never the declared one on its own. Every file the
+    generator creates starts at `furthest_stage: applied`, and an application
+    that advances only ever has `stage` moved by hand; trusting the declared
+    value blindly would report no progression at all for anyone who does not
+    maintain a second field.
     """
     # A pre-submission file has no reach at all, and must never inherit one
-    # from the fallback below.
-    if str(app.get("stage", "applied")) in PRE_SUBMISSION_STAGES:
+    # from the fallbacks below.
+    stage = str(app.get("stage", "applied"))
+    if stage in PRE_SUBMISSION_STAGES:
         return ""
     declared = str(app.get("furthest_stage") or "").strip()
-    if declared and declared != "null":
-        return declared
-    # A file predating the field, or parked in a non-lifecycle stage, is
-    # credited only with what `stage` can prove on its own.
-    stage = str(app.get("stage", "applied"))
-    return stage if stage in STAGES_ORDER else "applied"
+    if declared == "null":
+        declared = ""
+    # Compare only values that are positions in the lifecycle: a closed or
+    # parked `stage` proves nothing about reach, and neither does a typo.
+    positions = [s for s in (declared, stage) if s in STAGES_ORDER]
+    if positions:
+        return max(positions, key=STAGES_ORDER.index)
+    # Nothing usable on either side: a file predating the field and parked or
+    # closed is credited only with having been applied to.
+    return "applied"
 
 
 SECTION_MAP = {
