@@ -443,8 +443,16 @@ def score(missing: list, weak: list, present: list) -> int:
     return round(earned / total * 100)
 
 
-def run(jd_path: str, cv_path: str) -> int:
-    """Run gap analysis and return the keyword coverage % (0–100)."""
+def run(jd_path: str, cv_path: str) -> int | None:
+    """Run gap analysis and return the keyword coverage %, or None if unmeasurable.
+
+    `None` and `0` are different answers. Zero means the CV echoed none of the
+    JD's vocabulary; None means the JD yielded no vocabulary to echo, so there
+    is nothing to be a percentage of. Callers already distinguish them:
+    `new_application.py` writes `tech_keyword_coverage: null` and prints no
+    figure for None, which is the honest record for a JD that could not be
+    measured.
+    """
     jd_text = Path(jd_path).read_text(encoding="utf-8")
     cv_raw = Path(cv_path).read_text(encoding="utf-8")
     cv_text = strip_markdown(cv_raw)
@@ -467,11 +475,21 @@ def run(jd_path: str, cv_path: str) -> int:
     print("\n=== JD Keyword Gap Report ===")
     print(f"  JD : {jd_path}")
     print(f"  CV : {cv_path}")
-    print(
-        f"  Keyword coverage : {coverage}%  (vocabulary overlap, not a fit verdict)\n"
-    )
+    if jd_counts:
+        print(
+            f"  Keyword coverage : {coverage}%  "
+            f"(vocabulary overlap, not a fit verdict)\n"
+        )
+    else:
+        # An empty or unrecognised JD yields no terms, and `score` returns 0 for
+        # an empty bag. Printing `0%` beside "full coverage!" told the reader
+        # both that nothing matched and that everything did. Neither is true:
+        # there was nothing to measure.
+        print("  Keyword coverage : n/a — no recognised keywords in the JD\n")
 
-    if missing:
+    if not jd_counts:
+        print("MISSING: nothing to measure — the JD yielded no keywords")
+    elif missing:
         print(f"MISSING ({len(missing)}) — not in CV, address before sending:")
         for term, freq in missing[:30]:
             priority = "!!" if freq >= 3 else " !"
@@ -490,7 +508,10 @@ def run(jd_path: str, cv_path: str) -> int:
             print(f"      [{jd_f}x JD / {cv_f}x CV]  {term}")
 
     print()
-    return coverage
+    # Reporting `n/a` above and returning 0 here would put both answers in one
+    # generated application: `tech_keyword_coverage: 0` in the frontmatter and
+    # `Keyword coverage : n/a` in the gap report embedded below it.
+    return coverage if jd_counts else None
 
 
 def main() -> None:

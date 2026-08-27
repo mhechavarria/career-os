@@ -106,7 +106,12 @@ SECTION_MAP = {
 
 
 def parse_frontmatter(path: Path) -> dict:
-    text = path.read_text(encoding="utf-8")
+    # `utf-8-sig` strips a leading byte-order mark. Without it the BOM sits in
+    # front of the opening `---`, the frontmatter regex does not match, and the
+    # application is dropped from every count with no error — the same silent
+    # disappearance an unescaped company name used to cause. Editors on Windows
+    # add the mark without being asked, so this is not a hypothetical file.
+    text = path.read_text(encoding="utf-8-sig")
     match = re.match(r"^---\n([\s\S]*?)\n---", text)
     if not match:
         return {}
