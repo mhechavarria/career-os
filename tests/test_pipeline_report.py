@@ -319,3 +319,173 @@ class TestFunnelArithmetic(ReportHarness):
         offers = self._count(out.out, "Offer:")
         placed = self._count(out.out, "Placed:")
         assert total >= screened >= technical >= offers >= placed
+
+
+class TestCvPerformanceTable(ReportHarness):
+    """The per-CV table is where the `on-hold` behaviour actually changed, and
+    it had no end-to-end test at all: its screen rule could be replaced with
+    `if True` without failing anything."""
+
+    def test_only_a_reach_past_applied_counts_as_a_screen(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        """Kills `if True` and `in STAGES_ORDER` in the cv_perf screen rule.
+
+        `applied` is in STAGES_ORDER but is not a screen, so a rule using the
+        wrong set credits every submitted application with one.
+        """
+        out = self._report(
+            tmp_path,
+            monkeypatch,
+            capsys,
+            "type: application\ncompany: Alfa\nstage: applied"
+            "\ncv_version: cv/versions/backend.md",
+            "type: application\ncompany: Bravo\nstage: rejected"
+            "\nfurthest_stage: phone-screen\ncv_version: cv/versions/backend.md",
+        )
+        line = self._line(out.out, "backend")
+        assert "2 apps" in line
+        assert "1 screen" in line and "1 screens" not in line
+        assert line.rstrip().endswith("(50%)")
+
+    def test_a_parked_application_without_a_declared_reach_is_not_a_screen(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        """The exact case this change fixed: `on-hold` used to count here and
+        not in the funnel, so one report disagreed with itself."""
+        out = self._report(
+            tmp_path,
+            monkeypatch,
+            capsys,
+            "type: application\ncompany: Alfa\nstage: on-hold"
+            "\ncv_version: cv/versions/backend.md",
+        )
+        assert "0 screens" in self._line(out.out, "backend")
+        assert self._count(out.out, "Phone screen:") == 0
+
+
+class TestGapAggregation(ReportHarness):
+    """Keyword aggregation across applications, untested end to end until now."""
+
+    @staticmethod
+    def _link(tmp_path, slug: str, jd_terms: str, cv_body: str = "Nothing here"):
+        (tmp_path / "jds").mkdir(exist_ok=True)
+        (tmp_path / "cv" / "versions").mkdir(parents=True, exist_ok=True)
+        (tmp_path / "jds" / f"{slug}.txt").write_text(jd_terms, encoding="utf-8")
+        (tmp_path / "cv" / "versions" / f"{slug}.md").write_text(
+            cv_body, encoding="utf-8"
+        )
+        return (
+            f"type: application\ncompany: {slug.title()}\nstage: applied"
+            f"\njd_file: jds/{slug}.txt\ncv_version: cv/versions/{slug}.md"
+        )
+
+    def test_a_term_missing_from_two_applications_is_counted_twice(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        """Kills `missing_counter[term] = 1`.
+
+        The count IS the signal: a keyword missing once is noise, and one
+        missing across many applications is what earns a place on the master
+        CV. Collapsing it to 1 silences the ranking without changing anything
+        visible about which terms appear.
+        """
+        out = self._report(
+            tmp_path,
+            monkeypatch,
+            capsys,
+            self._link(tmp_path, "alfa", "We need Kubernetes experience."),
+            self._link(tmp_path, "bravo", "Kubernetes, mostly."),
+        )
+        assert "[ 2/2 apps]" in out.out
+        assert "kubernetes" in out.out
+
+    def test_a_dangling_file_reference_is_reported_and_excluded(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        """Kills replacing the `continue` with `pass`.
+
+        A typo'd path must not vanish from the analysis silently; it is the
+        difference between "this JD has no gaps" and "this JD was never read".
+        """
+        out = self._report(
+            tmp_path,
+            monkeypatch,
+            capsys,
+            "type: application\ncompany: Alfa\nstage: applied"
+            "\njd_file: jds/missing.txt\ncv_version: cv/versions/gone.md",
+        )
+        assert "missing file" in out.err
+        assert "No JD files linked yet" in out.out
+
+    def test_the_keyword_denominator_includes_drafts(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        """Kills `tailored = len(submitted)`.
+
+        A draft is excluded from every OUTCOME rate because it has no outcome,
+        but its tailoring is real CV work and belongs in the gap denominator.
+        The two counts are deliberately different populations.
+        """
+        draft = self._link(tmp_path, "bravo", "Kubernetes again.").replace(
+            "stage: applied", "stage: draft"
+        )
+        out = self._report(
+            tmp_path,
+            monkeypatch,
+            capsys,
+            self._link(tmp_path, "alfa", "We need Kubernetes experience."),
+            draft,
+        )
+        assert self._count(out.out, "Applications:") == 1
+        assert "[ 2/2 apps]" in out.out
+
+
+class TestDeclaredReachWarning(ReportHarness):
+    def test_a_valid_furthest_stage_is_not_warned_about(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        """Kills inverting the `reach not in STAGES_ORDER` condition."""
+        out = self._report(
+            tmp_path,
+            monkeypatch,
+            capsys,
+            "type: application\ncompany: Alfa\nstage: rejected\nfurthest_stage: onsite",
+        )
+        assert "unrecognised furthest_stage" not in out.err
+
+    def test_a_misspelled_furthest_stage_is_warned_about(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        out = self._report(
+            tmp_path,
+            monkeypatch,
+            capsys,
+            "type: application\ncompany: Alfa\nstage: rejected\nfurthest_stage: onsit",
+        )
+        assert "unrecognised furthest_stage 'onsit'" in out.err
+
+
+class TestDraftOnlyInstance(ReportHarness):
+    def test_a_repo_holding_only_drafts_reports_without_dividing_by_zero(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        """Kills relaxing `pct`'s `d > 0` guard to `d >= 0`.
+
+        Nothing has been submitted, so every outcome denominator is zero. This
+        is the state a fresh instance is in, which makes it the first thing a
+        new user would hit.
+        """
+        out = self._report(
+            tmp_path,
+            monkeypatch,
+            capsys,
+            "type: application\ncompany: Alfa\nstage: draft\nrole: Backend",
+        )
+        assert self._count(out.out, "Applications:") == 0
+        assert self._percent(out.out, "Phone screen:") == ""
+        assert "NOT SUBMITTED" in out.out
+
+    def test_pct_guards_a_zero_denominator_directly(self):
+        assert pr.pct(0, 0) == ""
+        assert pr.pct(1, 2) == "(50%)"

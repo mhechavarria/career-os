@@ -195,6 +195,12 @@ def main():
             if not (REPO_ROOT / jd_file).exists() or not (REPO_ROOT / cv_file).exists():
                 # Surface dangling references instead of silently dropping the
                 # application from gap analysis (finding D1).
+                #
+                # `get_missing_terms` guards the same two paths and returns []
+                # for them, so this `continue` is belt-and-braces: replacing it
+                # with `pass` produces byte-identical output. It stays because
+                # the intent is not to rely on that, and because the check that
+                # produces the warning should also be the one that acts on it.
                 print(
                     f"Warning: application references a missing file "
                     f"(jd_file={jd_file}, cv_version={cv_file}) "
