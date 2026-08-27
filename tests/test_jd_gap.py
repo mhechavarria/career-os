@@ -201,3 +201,85 @@ def test_main_exits_cleanly_on_missing_file(monkeypatch, tmp_path, capsys):
         jd_gap.main()
     assert exc.value.code == 1
     assert "not found" in capsys.readouterr().err
+
+
+# --- a JD with nothing to measure -------------------------------------------
+
+
+def test_an_empty_jd_does_not_claim_full_coverage(tmp_path, capsys):
+    """It used to print `0%` and `full coverage!` on the same screen.
+
+    Both cannot be true, and neither was: an empty JD yields no terms, so there
+    was nothing to cover. A reader had to pick which half to believe, which is
+    the same defect class as a warning contradicting the rate beneath it.
+    """
+    jd = tmp_path / "empty.txt"
+    jd.write_text("", encoding="utf-8")
+    cv = tmp_path / "cv.md"
+    cv.write_text("# CV\n\nSome prose.\n", encoding="utf-8")
+
+    coverage = jd_gap.run(str(jd), str(cv))
+    out = capsys.readouterr().out
+
+    # Not 0. Zero is a real measurement meaning the CV echoed nothing; None
+    # means there was nothing to measure, and the callers already write
+    # `null` and print no figure for it.
+    assert coverage is None
+    assert "full coverage" not in out
+    assert "nothing to measure" in out
+    assert "n/a" in out
+
+
+def test_a_jd_with_no_recognised_keywords_is_reported_as_unmeasurable(tmp_path, capsys):
+    jd = tmp_path / "prose.txt"
+    jd.write_text("We are looking for a wonderful person who likes people.\n", "utf-8")
+    cv = tmp_path / "cv.md"
+    cv.write_text("# CV\n", encoding="utf-8")
+
+    jd_gap.run(str(jd), str(cv))
+    out = capsys.readouterr().out
+    assert "full coverage" not in out
+
+
+def test_a_real_gap_still_reports_the_missing_term(tmp_path, capsys):
+    """The unmeasurable path must not swallow the ordinary one."""
+    jd = tmp_path / "jd.txt"
+    jd.write_text("We need Kubernetes and Terraform.\n", encoding="utf-8")
+    cv = tmp_path / "cv.md"
+    cv.write_text("# CV\n\nI know Terraform.\n", encoding="utf-8")
+
+    jd_gap.run(str(jd), str(cv))
+    out = capsys.readouterr().out
+    assert "MISSING" in out
+    assert "kubernetes" in out
+    assert "nothing to measure" not in out
+
+
+def test_a_real_zero_coverage_is_still_reported_as_zero(tmp_path, capsys):
+    """`None` must not swallow a genuine measurement of nothing matching."""
+    jd = tmp_path / "jd.txt"
+    jd.write_text("We need Kubernetes and Terraform.\n", encoding="utf-8")
+    cv = tmp_path / "cv.md"
+    cv.write_text("# CV\n\nI have opinions about wine.\n", encoding="utf-8")
+
+    assert jd_gap.run(str(jd), str(cv)) == 0
+
+
+def test_the_generated_application_agrees_with_its_own_gap_report(tmp_path):
+    """The contradiction that returning 0 for an unmeasurable JD produced.
+
+    `new_application.py` writes `tech_keyword_coverage` into the frontmatter
+    and embeds the gap report in the same file. Returning 0 while the report
+    said `n/a` put both answers in one document, which is the defect the
+    report's own wording was fixed to avoid.
+    """
+    import new_application
+
+    jd = tmp_path / "empty.txt"
+    jd.write_text("", encoding="utf-8")
+    cv = tmp_path / "cv.md"
+    cv.write_text("# CV\n", encoding="utf-8")
+
+    coverage = jd_gap.run(str(jd), str(cv))
+    rendered = f"tech_keyword_coverage: {new_application.yaml_scalar(coverage)}"
+    assert rendered == "tech_keyword_coverage: null"
