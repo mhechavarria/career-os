@@ -79,34 +79,21 @@ class TestStageVocabulary:
         assert "phone-screen" in pr.SCREENED_STAGES
         assert "placed" in pr.SCREENED_STAGES
 
-    def test_known_stages_covers_every_stage_in_the_repo(self):
-        """Anything outside the vocabulary silently skews the rates."""
-        for stage in (
-            "draft",
-            "applied",
-            "phone-screen",
-            "on-hold",
-            "rejected",
-            "ghosted",
-            "withdrawn",
-            "placed",
-        ):
-            assert stage in pr.KNOWN_STAGES
+    def test_known_stages_covers_the_whole_vocabulary(self):
+        """Anything outside the vocabulary silently skews the rates.
 
-    def test_an_unrecognised_stage_still_counts_as_an_application(self):
-        """The warning used to promise the opposite of what the code does.
-
-        An unrecognised `stage` is not a draft, so the record stays in the
-        submitted set and sits in every denominator, while its reach falls
-        back to `applied` and never reaches SCREENED_STAGES. That is a typo
-        deflating the rates, not a record being skipped, and the warning has
-        to say so or it sends the reader looking for a missing application.
+        Derived from the sets rather than retyped: the hand-written list this
+        replaces omitted `technical`, `system-design`, `take-home`, `onsite`
+        and `offer` while its name promised every stage.
         """
-        typo = {"stage": "phone-scren"}
-        assert typo["stage"] not in pr.KNOWN_STAGES
-        assert typo["stage"] not in pr.PRE_SUBMISSION_STAGES
-        assert pr.furthest_stage(typo) == "applied"
-        assert pr.furthest_stage(typo) not in pr.SCREENED_STAGES
+        for group in (
+            pr.STAGES_ORDER,
+            pr.CLOSED_STAGES,
+            pr.PRE_SUBMISSION_STAGES,
+            pr.PARKED_STAGES,
+        ):
+            for stage in group:
+                assert stage in pr.KNOWN_STAGES
 
     def test_a_rejected_screen_still_counts_as_a_screen(self):
         """The regression this file exists for."""
@@ -117,3 +104,77 @@ class TestStageVocabulary:
         ]
         screened = sum(1 for a in apps if pr.furthest_stage(a) in pr.SCREENED_STAGES)
         assert screened == 2
+
+
+class TestUnrecognisedStageWarning:
+    """The warning is the thing under test, so the report has to actually run.
+
+    An earlier version of this file asserted only `furthest_stage()` and the
+    stage sets. Both were already correct, so it passed against the very
+    warning text it was written to pin, and would have kept passing while the
+    message said anything at all.
+    """
+
+    def _report(self, tmp_path, monkeypatch, capsys, frontmatter: str):
+        apps = tmp_path / "applications"
+        apps.mkdir()
+        (apps / "a.md").write_text(f"---\n{frontmatter}\n---\n", encoding="utf-8")
+        monkeypatch.setattr(pr, "REPO_ROOT", tmp_path)
+        pr.main()
+        return capsys.readouterr()
+
+    def test_it_warns_and_still_counts_the_application(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        out = self._report(
+            tmp_path,
+            monkeypatch,
+            capsys,
+            "type: application\ncompany: Acme\nstage: phone-scren",
+        )
+        assert "unrecognised stage 'phone-scren'" in out.err
+        assert "Applications:     1" in out.out
+        assert "Phone screen:       0" in out.out
+
+    def test_the_warning_never_contradicts_the_rate_printed_below_it(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        """A typo'd `stage` next to a valid `furthest_stage` DOES screen.
+
+        The warning used to deny that in the same breath as the funnel counted
+        it, so the reader had to pick which half of one report to believe.
+        """
+        out = self._report(
+            tmp_path,
+            monkeypatch,
+            capsys,
+            "type: application\ncompany: Acme\n"
+            "stage: phone-scren\nfurthest_stage: phone-screen",
+        )
+        assert "Phone screen:       1" in out.out
+        assert "never count as a screen" not in out.err
+        assert "falls back to 'applied'" not in out.err
+        # It names the reach that was actually used, so it cannot drift.
+        assert "'phone-screen'" in out.err
+
+    def test_it_names_the_fallback_when_there_is_no_declared_reach(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        out = self._report(
+            tmp_path,
+            monkeypatch,
+            capsys,
+            "type: application\ncompany: Acme\nstage: phone-scren",
+        )
+        assert "reach reads as 'applied'" in out.err
+
+    def test_a_recognised_stage_warns_about_nothing(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        out = self._report(
+            tmp_path,
+            monkeypatch,
+            capsys,
+            "type: application\ncompany: Acme\nstage: phone-screen",
+        )
+        assert "unrecognised stage" not in out.err

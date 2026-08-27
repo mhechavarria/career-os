@@ -165,10 +165,17 @@ def main():
         company = app.get("company", "unknown")
         stage = str(app.get("stage", "applied"))
         if stage not in KNOWN_STAGES:
+            # Report the reach that was actually computed, never a claim about
+            # what it will be. The first wording said the record would not count
+            # toward any rate, which was false. The second said its reach falls
+            # back to `applied` and so can never be a screen, which is false
+            # whenever `furthest_stage` holds a valid value — the rate printed
+            # a few lines below then contradicted the warning on the same
+            # screen. An interpolated value cannot disagree with itself.
             print(
                 f"Warning: {company} has an unrecognised stage '{stage}' "
-                f"— it still counts as an application, but its reach falls "
-                f"back to 'applied', so it can never count as a screen",
+                f"— it still counts as an application, and its reach reads as "
+                f"'{furthest_stage(app)}'; set furthest_stage if that is wrong",
                 file=sys.stderr,
             )
         reach = str(app.get("furthest_stage") or "").strip()
