@@ -167,7 +167,8 @@ def main():
         if stage not in KNOWN_STAGES:
             print(
                 f"Warning: {company} has an unrecognised stage '{stage}' "
-                f"— it will not count toward any rate",
+                f"— it still counts as an application, but its reach falls "
+                f"back to 'applied', so it can never count as a screen",
                 file=sys.stderr,
             )
         reach = str(app.get("furthest_stage") or "").strip()
