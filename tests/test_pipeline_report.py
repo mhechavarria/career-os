@@ -8,6 +8,8 @@ then closed, which is the case that used to be counted inconsistently.
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).parent.parent / "scripts"))
 
 import pipeline_report as pr  # noqa: E402
@@ -123,6 +125,19 @@ class TestUnrecognisedStageWarning:
         pr.main()
         return capsys.readouterr()
 
+    @staticmethod
+    def _count(report: str, label: str) -> int:
+        """The counted value on one funnel line, not a substring of the line.
+
+        `"Phone screen:       1" in out` is a substring test: it survives a
+        changed column width and reads as satisfied by anything that happens to
+        contain those characters. Split the real line instead.
+        """
+        line = next(ln for ln in report.splitlines() if ln.strip().startswith(label))
+        return int(
+            line.split()[-2] if line.rstrip().endswith(")") else line.split()[-1]
+        )
+
     def test_it_warns_and_still_counts_the_application(
         self, tmp_path, monkeypatch, capsys
     ):
@@ -133,40 +148,52 @@ class TestUnrecognisedStageWarning:
             "type: application\ncompany: Acme\nstage: phone-scren",
         )
         assert "unrecognised stage 'phone-scren'" in out.err
-        assert "Applications:     1" in out.out
-        assert "Phone screen:       0" in out.out
+        assert self._count(out.out, "Applications:") == 1
+        assert self._count(out.out, "Phone screen:") == 0
 
-    def test_the_warning_never_contradicts_the_rate_printed_below_it(
-        self, tmp_path, monkeypatch, capsys
+    # Distinct reaches, most of them not derivable from "is the field set?".
+    # A message that hardcodes the answer instead of asking `furthest_stage()`
+    # would have to enumerate the whole lifecycle to pass, at which point it IS
+    # the function. The earlier version asserted two, and a conditional
+    # hardcode that consulted nothing satisfied both.
+    @pytest.mark.parametrize(
+        "declared,expected_reach,expected_screens",
+        [
+            (None, "applied", 0),
+            ("phone-screen", "phone-screen", 1),
+            ("onsite", "onsite", 1),
+            ("placed", "placed", 1),
+            # Both fields misspelled. The only case in this branch where the
+            # raw `furthest_stage` field and the computed reach disagree, so
+            # it is the only one that catches a message echoing the field
+            # instead of asking for the high-water mark.
+            ("onsit", "applied", 0),
+        ],
+    )
+    def test_the_warning_names_the_reach_the_funnel_actually_counted(
+        self,
+        tmp_path,
+        monkeypatch,
+        capsys,
+        declared,
+        expected_reach,
+        expected_screens,
     ):
-        """A typo'd `stage` next to a valid `furthest_stage` DOES screen.
+        """The warning and the rate below it have to tell the same story.
 
-        The warning used to deny that in the same breath as the funnel counted
-        it, so the reader had to pick which half of one report to believe.
+        The first two wordings each denied, in prose, a screen the funnel went
+        on to count, leaving the reader to pick which half of one report to
+        believe. Asserting both together is the only thing that pins that.
         """
-        out = self._report(
-            tmp_path,
-            monkeypatch,
-            capsys,
-            "type: application\ncompany: Acme\n"
-            "stage: phone-scren\nfurthest_stage: phone-screen",
-        )
-        assert "Phone screen:       1" in out.out
-        assert "never count as a screen" not in out.err
-        assert "falls back to 'applied'" not in out.err
-        # It names the reach that was actually used, so it cannot drift.
-        assert "'phone-screen'" in out.err
+        frontmatter = "type: application\ncompany: Acme\nstage: phone-scren"
+        if declared:
+            frontmatter += f"\nfurthest_stage: {declared}"
+        out = self._report(tmp_path, monkeypatch, capsys, frontmatter)
 
-    def test_it_names_the_fallback_when_there_is_no_declared_reach(
-        self, tmp_path, monkeypatch, capsys
-    ):
-        out = self._report(
-            tmp_path,
-            monkeypatch,
-            capsys,
-            "type: application\ncompany: Acme\nstage: phone-scren",
-        )
-        assert "reach reads as 'applied'" in out.err
+        assert f"reach reads as '{expected_reach}'" in out.err
+        assert self._count(out.out, "Phone screen:") == expected_screens
+        assert "never count as a screen" not in out.err
+        assert "will not count toward any rate" not in out.err
 
     def test_a_recognised_stage_warns_about_nothing(
         self, tmp_path, monkeypatch, capsys
