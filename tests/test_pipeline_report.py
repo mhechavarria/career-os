@@ -108,7 +108,50 @@ class TestStageVocabulary:
         assert screened == 2
 
 
-class TestUnrecognisedStageWarning:
+class ReportHarness:
+    """Runs the real `main()` over a throwaway repo and reads what it printed.
+
+    Asserting on the report itself is the point. Checking the helper functions
+    in isolation is what let two earlier versions of these tests pass against
+    the very defects they were written to pin.
+    """
+
+    def _report(self, tmp_path, monkeypatch, capsys, *frontmatters: str):
+        apps = tmp_path / "applications"
+        apps.mkdir()
+        for i, frontmatter in enumerate(frontmatters):
+            (apps / f"app{i}.md").write_text(
+                f"---\n{frontmatter}\n---\n", encoding="utf-8"
+            )
+        monkeypatch.setattr(pr, "REPO_ROOT", tmp_path)
+        pr.main()
+        return capsys.readouterr()
+
+    @staticmethod
+    def _line(report: str, label: str) -> str:
+        return next(ln for ln in report.splitlines() if ln.strip().startswith(label))
+
+    @classmethod
+    def _count(cls, report: str, label: str) -> int:
+        """The counted value on one funnel line, not a substring of the line.
+
+        `"Phone screen:       1" in out` is a substring test: it survives a
+        changed column width and reads as satisfied by anything that happens to
+        contain those characters. Split the real line instead.
+        """
+        line = cls._line(report, label)
+        return int(
+            line.split()[-2] if line.rstrip().endswith(")") else line.split()[-1]
+        )
+
+    @classmethod
+    def _percent(cls, report: str, label: str) -> str:
+        """The rate, which is where a wrong denominator shows and a count does not."""
+        line = cls._line(report, label).rstrip()
+        return line.split()[-1] if line.endswith(")") else ""
+
+
+class TestUnrecognisedStageWarning(ReportHarness):
     """The warning is the thing under test, so the report has to actually run.
 
     An earlier version of this file asserted only `furthest_stage()` and the
@@ -116,27 +159,6 @@ class TestUnrecognisedStageWarning:
     warning text it was written to pin, and would have kept passing while the
     message said anything at all.
     """
-
-    def _report(self, tmp_path, monkeypatch, capsys, frontmatter: str):
-        apps = tmp_path / "applications"
-        apps.mkdir()
-        (apps / "a.md").write_text(f"---\n{frontmatter}\n---\n", encoding="utf-8")
-        monkeypatch.setattr(pr, "REPO_ROOT", tmp_path)
-        pr.main()
-        return capsys.readouterr()
-
-    @staticmethod
-    def _count(report: str, label: str) -> int:
-        """The counted value on one funnel line, not a substring of the line.
-
-        `"Phone screen:       1" in out` is a substring test: it survives a
-        changed column width and reads as satisfied by anything that happens to
-        contain those characters. Split the real line instead.
-        """
-        line = next(ln for ln in report.splitlines() if ln.strip().startswith(label))
-        return int(
-            line.split()[-2] if line.rstrip().endswith(")") else line.split()[-1]
-        )
 
     def test_it_warns_and_still_counts_the_application(
         self, tmp_path, monkeypatch, capsys
@@ -205,3 +227,95 @@ class TestUnrecognisedStageWarning:
             "type: application\ncompany: Acme\nstage: phone-screen",
         )
         assert "unrecognised stage" not in out.err
+
+
+class TestFunnelArithmetic(ReportHarness):
+    """The conversion rates are the reason this tool exists, and three of the
+    rules behind them survived every mutation the review threw at them.
+
+    Each test below names the mutant it kills, because a rate test that only
+    asserts a count passes against a wrong denominator: the count is right in
+    both, and only the percentage moves.
+    """
+
+    APPLIED = "type: application\ncompany: Alfa\nstage: applied"
+    DRAFT = "type: application\ncompany: Bravo\nstage: draft\nrole: Backend"
+
+    def test_a_draft_stays_out_of_every_denominator(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        """Kills `submitted = list(apps)`.
+
+        A draft is tailored work that was never sent, so it has no outcome to
+        measure. Counting it would silently deflate every rate in the report,
+        and this line is the whole reason the stage exists.
+        """
+        out = self._report(
+            tmp_path,
+            monkeypatch,
+            capsys,
+            "type: application\ncompany: Alfa\nstage: phone-screen"
+            "\nfurthest_stage: phone-screen",
+            self.DRAFT,
+        )
+        assert self._count(out.out, "Applications:") == 1
+        assert self._percent(out.out, "Phone screen:") == "(100%)"
+        assert "NOT SUBMITTED" in out.out
+        assert "Bravo" in out.out
+
+    def test_the_technical_rate_is_out_of_screens_not_applications(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        """Kills `pct(technical, total)`.
+
+        "How many of the screens reached a technical round" is the question
+        worth asking; dividing by every application answers a different one.
+        Both denominators print `Technical round: 1`, so only the rate catches
+        it.
+        """
+        out = self._report(
+            tmp_path,
+            monkeypatch,
+            capsys,
+            self.APPLIED,
+            "type: application\ncompany: Charlie\nstage: technical"
+            "\nfurthest_stage: technical",
+        )
+        assert self._count(out.out, "Applications:") == 2
+        assert self._count(out.out, "Phone screen:") == 1
+        assert self._count(out.out, "Technical round:") == 1
+        assert self._percent(out.out, "Technical round:") == "(100%)"
+
+    def test_a_placement_counts_as_an_offer_too(self, tmp_path, monkeypatch, capsys):
+        """Kills `offers = reach_counts.get("offer", 0)`.
+
+        Nobody is placed without being offered first, so a placement that did
+        not increment offers would report a funnel narrower at the offer step
+        than at the step after it.
+        """
+        out = self._report(
+            tmp_path,
+            monkeypatch,
+            capsys,
+            "type: application\ncompany: Delta\nstage: placed\nfurthest_stage: placed",
+        )
+        assert self._count(out.out, "Placed:") == 1
+        assert self._count(out.out, "Offer:") == 1
+
+    def test_no_rate_exceeds_the_step_above_it(self, tmp_path, monkeypatch, capsys):
+        """A funnel that widens as it narrows is arithmetically impossible."""
+        out = self._report(
+            tmp_path,
+            monkeypatch,
+            capsys,
+            self.APPLIED,
+            "type: application\ncompany: Charlie\nstage: technical"
+            "\nfurthest_stage: technical",
+            "type: application\ncompany: Delta\nstage: placed\nfurthest_stage: placed",
+        )
+        total = self._count(out.out, "Applications:")
+        screened = self._count(out.out, "Phone screen:")
+        technical = self._count(out.out, "Technical round:")
+        offers = self._count(out.out, "Offer:")
+        placed = self._count(out.out, "Placed:")
+        assert total >= screened >= technical >= offers >= placed
