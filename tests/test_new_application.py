@@ -195,3 +195,59 @@ def test_a_generated_file_is_readable_by_the_report(tmp_path, monkeypatch):
     assert frontmatter["company"] == "Acme: Europe"
     assert frontmatter["role"] == "Engineer #2"
     assert pipeline_report.furthest_stage(frontmatter) == "applied"
+
+
+# --- the generate_cv contract ------------------------------------------------
+
+
+import generate_cv  # noqa: E402
+
+
+class TestGeneratedPdfPathContract:
+    """`new_application` reads the PDF's location out of `generate_cv`'s stdout.
+
+    That is a contract between two files dressed as a human-readable message,
+    and it had no test on either side. Rewording the line is a one-word edit
+    that looks cosmetic and costs every new application its `cv_pdf` reference.
+    """
+
+    @pytest.mark.parametrize("pages", [1, 2, 11])
+    def test_it_reads_the_line_generate_cv_actually_prints(self, pages):
+        """Built from `generate_cv.done_line`, so rewording one side fails here."""
+        stdout = generate_cv.done_line("cv/versions/jane-acme.pdf", pages)
+        assert new_application.parse_generated_pdf_path(stdout) == Path(
+            "cv/versions/jane-acme.pdf"
+        )
+
+    def test_it_survives_a_path_containing_spaces(self):
+        stdout = generate_cv.done_line("cv/versions/jane doe acme.pdf", 2)
+        assert new_application.parse_generated_pdf_path(stdout) == Path(
+            "cv/versions/jane doe acme.pdf"
+        )
+
+    def test_it_finds_the_line_among_other_output(self):
+        stdout = "\n".join(
+            [
+                "Rendering...",
+                generate_cv.done_line("cv/versions/x.pdf", 1),
+                "trailing chatter",
+            ]
+        )
+        assert new_application.parse_generated_pdf_path(stdout) == Path(
+            "cv/versions/x.pdf"
+        )
+
+    def test_unrecognised_output_returns_none_rather_than_guessing(self):
+        """The caller warns on None; a wrong path would be recorded as fact."""
+        assert new_application.parse_generated_pdf_path("Done: x.pdf [1p]") is None
+        assert new_application.parse_generated_pdf_path("") is None
+
+    def test_the_format_still_carries_what_the_parser_needs(self):
+        """Names the coupling outright, so a reword fails with an explanation.
+
+        `DONE_LINE` is the single owner of this format; the parser depends on
+        its arrow and its trailing page count.
+        """
+        assert "{path}" in generate_cv.DONE_LINE
+        assert "{pages}" in generate_cv.DONE_LINE
+        assert "→" in generate_cv.DONE_LINE

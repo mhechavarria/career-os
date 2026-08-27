@@ -233,6 +233,25 @@ def default_output_path(input_path: Path, clean_text: str) -> Path:
     return input_path.with_name(f"{stem}.pdf")
 
 
+DONE_LINE = "Done →   {path} ({pages} page{plural})"
+
+
+def done_line(output_path, pages: int) -> str:
+    """The success line, which `new_application.py` parses to learn the path.
+
+    It reads as a human message and is also a contract. Keeping the format in
+    one named place is what lets a test on the other side of that contract fail
+    when this is reworded, instead of the rewording silently costing every new
+    application its `cv_pdf` reference.
+
+    The generator stays the only owner of the PDF's name: predicting it in the
+    caller meant a second copy of the naming rule, and the two drifted once.
+    """
+    return DONE_LINE.format(
+        path=output_path, pages=pages, plural="s" if pages != 1 else ""
+    )
+
+
 # ---------------------------------------------------------------------------
 # CLI
 # ---------------------------------------------------------------------------
@@ -283,7 +302,7 @@ def main() -> None:
             file=sys.stderr,
         )
 
-    print(f"Done →   {output_path} ({pages} page{'s' if pages != 1 else ''})")
+    print(done_line(output_path, pages))
 
 
 if __name__ == "__main__":

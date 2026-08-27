@@ -48,6 +48,23 @@ def slugify(text: str) -> str:
     return text.strip("-")
 
 
+PDF_DONE_RE = re.compile(r"Done →\s+(\S.*?)\s+\(\d+ pages?\)")
+
+
+def parse_generated_pdf_path(stdout: str) -> Path | None:
+    """Read the rendered PDF's path out of `generate_cv.py`'s success line.
+
+    The generator names the file, because predicting the name here would be a
+    second copy of the naming rule and the two drifted once already. The cost
+    of that choice is this parser, which is a contract against another script's
+    human-readable output: reword `generate_cv.done_line` and every new
+    application quietly loses its `cv_pdf` reference. `generate_cv.DONE_LINE`
+    exists so a test can hold both sides of that together.
+    """
+    match = PDF_DONE_RE.search(stdout)
+    return Path(match.group(1)) if match else None
+
+
 def yaml_scalar(value: object) -> str:
     """Serialise one frontmatter value so user text cannot break the document.
 
@@ -194,9 +211,8 @@ def main():
                 text=True,
             )
             if result.returncode == 0:
-                done = re.search(r"Done →\s+(\S.*?)\s+\(\d+ pages?\)", result.stdout)
-                if done:
-                    pdf_path = Path(done.group(1))
+                pdf_path = parse_generated_pdf_path(result.stdout)
+                if pdf_path is not None:
                     with contextlib.suppress(ValueError):
                         cv_pdf_ref = str(pdf_path.relative_to(REPO_ROOT).as_posix())
                 if cv_pdf_ref is None:
