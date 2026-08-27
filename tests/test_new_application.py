@@ -3,6 +3,8 @@
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 import new_application  # noqa: E402
@@ -109,3 +111,87 @@ def test_copies_jd_from_outside_jds_dir(monkeypatch, tmp_path):
     assert "jd_file: jds/cardume-staff-backend-engineer.txt" in app.read_text(
         encoding="utf-8"
     )
+
+
+# --- yaml_scalar: the frontmatter this script writes must survive being read -
+
+
+import yaml  # noqa: E402
+
+import pipeline_report  # noqa: E402
+
+
+HOSTILE_VALUES = [
+    "Acme: Europe",  # a colon ended the mapping and voided the whole document
+    "Engineer #2",  # `#2` was eaten as a comment, silently
+    "No",  # would come back as the boolean False
+    "null",  # would come back as None
+    "true",
+    "2026",  # would come back as an int
+    "2026-08-27",  # would come back as a date
+    "R&D",
+    "Straße GmbH",
+    "- leading dash",
+    "@handle",
+    "*star",
+    'say "hi"',
+    "it's",
+    "trailing space ",
+    "line\nbreak",
+]
+
+
+@pytest.mark.parametrize("value", HOSTILE_VALUES)
+def test_yaml_scalar_round_trips_as_a_string(value):
+    """Every one of these used to corrupt or void the generated file.
+
+    The two that mattered in practice: a colon made
+    `parse_frontmatter` return `{}`, so the application disappeared from every
+    report with no error, and a `#` truncated the value while leaving a record
+    that still looked fine.
+    """
+    document = f"key: {new_application.yaml_scalar(value)}"
+    loaded = yaml.safe_load(document)["key"]
+    assert isinstance(loaded, str)
+    assert loaded == " ".join(value.split())
+
+
+def test_yaml_scalar_emits_a_real_null_for_none():
+    """The `jd_file`/`cv_pdf` sentinel has to stay YAML null, not the text."""
+    assert new_application.yaml_scalar(None) == "null"
+    assert yaml.safe_load(f"key: {new_application.yaml_scalar(None)}")["key"] is None
+
+
+def test_yaml_scalar_leaves_ordinary_values_unquoted():
+    """Quoting everything would churn every generated file for no reason."""
+    assert new_application.yaml_scalar("Cleanco") == "Cleanco"
+    assert new_application.yaml_scalar("Senior Backend Engineer") == (
+        "Senior Backend Engineer"
+    )
+
+
+def test_a_generated_file_is_readable_by_the_report(tmp_path, monkeypatch):
+    """The contract that actually matters, exercised end to end.
+
+    `new_application.py` writes the file and `pipeline_report.py` reads it;
+    nothing tested that the two agreed on the format.
+    """
+    body = "\n".join(
+        f"{key}: {new_application.yaml_scalar(value)}"
+        for key, value in (
+            ("company", "Acme: Europe"),
+            ("role", "Engineer #2"),
+            ("cv_version", "cv/versions/backend.md"),
+        )
+    )
+    path = tmp_path / "app.md"
+    path.write_text(
+        f"---\ntype: application\n{body}\nstage: applied\nfurthest_stage: applied\n---\n",
+        encoding="utf-8",
+    )
+
+    frontmatter = pipeline_report.parse_frontmatter(path)
+    assert frontmatter.get("type") == "application"
+    assert frontmatter["company"] == "Acme: Europe"
+    assert frontmatter["role"] == "Engineer #2"
+    assert pipeline_report.furthest_stage(frontmatter) == "applied"

@@ -29,6 +29,8 @@ import unicodedata
 from datetime import date
 from pathlib import Path
 
+import yaml
+
 sys.path.insert(0, str(Path(__file__).parent))
 import jd_gap
 
@@ -44,6 +46,34 @@ def slugify(text: str) -> str:
     text = text.lower()
     text = re.sub(r"[^a-z0-9]+", "-", text)
     return text.strip("-")
+
+
+def yaml_scalar(value: object) -> str:
+    """Serialise one frontmatter value so user text cannot break the document.
+
+    These fields are interpolated into a YAML block, and the values come from
+    the command line. A company named `Acme: Europe` produced a file that
+    `pipeline_report.parse_frontmatter` could not read at all, so it returned
+    `{}` and the application vanished from every count with no error anywhere.
+    A role like `Engineer #2` was worse: it parsed, and silently lost the `#2`
+    to a YAML comment.
+
+    Quoting is left to the YAML dumper rather than guessed at, which also
+    settles the cases nobody thinks of — a company called `No` or `null`, or a
+    role that is all digits, would otherwise be read back as a boolean, a null
+    and an integer.
+    """
+    if value is None:
+        return "null"
+    if isinstance(value, str):
+        # A newline would emit a multi-line scalar into a flat template.
+        value = " ".join(value.split())
+    return (
+        yaml.safe_dump(value, default_flow_style=True, allow_unicode=True, width=10**6)
+        .strip()
+        .removesuffix("...")
+        .strip()
+    )
 
 
 def main():
@@ -96,7 +126,7 @@ def main():
         sys.exit(1)
 
     # Handle JD file
-    jd_file_ref = "null"
+    jd_file_ref = None
     gap_section = (
         "<!-- Run: python3 scripts/jd_gap.py <jd.txt> cv/versions/<slug>.md -->"
     )
@@ -144,7 +174,7 @@ def main():
     location = "Remote" if args.remote else args.location
 
     # Generate company-named PDF
-    cv_pdf_ref = "null"
+    cv_pdf_ref = None
     if not args.no_pdf:
         cv_path = REPO_ROOT / args.cv
         if cv_path.exists():
@@ -169,7 +199,7 @@ def main():
                     pdf_path = Path(done.group(1))
                     with contextlib.suppress(ValueError):
                         cv_pdf_ref = str(pdf_path.relative_to(REPO_ROOT).as_posix())
-                if cv_pdf_ref == "null":
+                if cv_pdf_ref is None:
                     print(
                         "Warning: could not read the rendered PDF path from "
                         "generate_cv.py output",
@@ -190,14 +220,14 @@ def main():
 
     content = f"""---
 type: application
-company: {args.company}
-role: {args.role}
-level: {args.level}
-source: {args.source}
-url: {args.url}
-jd_file: {jd_file_ref}
-cv_version: {args.cv}
-cv_pdf: {cv_pdf_ref}
+company: {yaml_scalar(args.company)}
+role: {yaml_scalar(args.role)}
+level: {yaml_scalar(args.level)}
+source: {yaml_scalar(args.source)}
+url: {yaml_scalar(args.url)}
+jd_file: {yaml_scalar(jd_file_ref)}
+cv_version: {yaml_scalar(args.cv)}
+cv_pdf: {yaml_scalar(cv_pdf_ref)}
 applied_date: {today.isoformat()}
 status: active
 stage: applied
@@ -208,7 +238,7 @@ salary_min: null
 salary_max: null
 currency: USD
 remote: {str(args.remote).lower()}
-location: {location}
+location: {yaml_scalar(location)}
 tags: []
 ---
 
@@ -252,9 +282,9 @@ tags: []
     print(f"\nCreated: {rel}")
     if coverage is not None:
         print(f"    Tech keyword coverage: {coverage}%")
-    if cv_pdf_ref != "null":
+    if cv_pdf_ref is not None:
         print(f"    PDF: {cv_pdf_ref}")
-    if jd_file_ref == "null":
+    if jd_file_ref is None:
         print(f"\n  Add JD to jds/{slug}.txt then run:")
         print(f"    python3 scripts/jd_gap.py jds/{slug}.txt {args.cv}")
     print(
