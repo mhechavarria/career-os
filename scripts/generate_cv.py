@@ -228,7 +228,11 @@ def default_output_path(input_path: Path, clean_text: str) -> Path:
     """
     stem = input_path.stem
     slug = name_slug(clean_text)
-    if slug and not stem.startswith(slug):
+    # `startswith` alone matches a partial name: `Ann` is a prefix of the stem
+    # `anna-staff`, so Ann's CV silently kept Anna's filename and never gained
+    # its own prefix. Require the whole slug, ending at a separator.
+    already_prefixed = stem == slug or stem.startswith(f"{slug}-")
+    if slug and not already_prefixed:
         stem = f"{slug}-{stem}"
     return input_path.with_name(f"{stem}.pdf")
 

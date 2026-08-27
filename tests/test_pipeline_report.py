@@ -489,3 +489,50 @@ class TestDraftOnlyInstance(ReportHarness):
     def test_pct_guards_a_zero_denominator_directly(self):
         assert pr.pct(0, 0) == ""
         assert pr.pct(1, 2) == "(50%)"
+
+
+class TestFileEncoding(ReportHarness):
+    """A file the report cannot parse disappears from every count in silence,
+    so how the bytes arrive is part of the contract, not an implementation
+    detail."""
+
+    def test_a_byte_order_mark_does_not_hide_an_application(
+        self, tmp_path, monkeypatch, capsys
+    ):
+        """Windows editors add a BOM unasked, and it sits before the `---`.
+
+        The frontmatter regex is anchored at the start of the file, so the mark
+        made `parse_frontmatter` return `{}` and the application vanish with no
+        error — the same silent loss an unescaped company name used to cause.
+        """
+        apps = tmp_path / "applications"
+        apps.mkdir()
+        (apps / "plain.md").write_text(
+            "---\ntype: application\ncompany: Alfa\nstage: applied\n---\n",
+            encoding="utf-8",
+        )
+        (apps / "bom.md").write_text(
+            "---\ntype: application\ncompany: Bravo\nstage: applied\n---\n",
+            encoding="utf-8-sig",
+        )
+        monkeypatch.setattr(pr, "REPO_ROOT", tmp_path)
+        pr.main()
+        out = capsys.readouterr()
+        assert self._count(out.out, "Applications:") == 2
+
+    def test_crlf_line_endings_are_read(self, tmp_path, monkeypatch, capsys):
+        apps = tmp_path / "applications"
+        apps.mkdir()
+        (apps / "crlf.md").write_bytes(
+            b"---\r\ntype: application\r\ncompany: Alfa\r\nstage: applied\r\n---\r\n"
+        )
+        monkeypatch.setattr(pr, "REPO_ROOT", tmp_path)
+        pr.main()
+        assert self._count(capsys.readouterr().out, "Applications:") == 1
+
+    def test_a_bom_file_parses_to_real_frontmatter(self, tmp_path):
+        path = tmp_path / "bom.md"
+        path.write_text(
+            "---\ntype: application\ncompany: Alfa\n---\n", encoding="utf-8-sig"
+        )
+        assert pr.parse_frontmatter(path).get("company") == "Alfa"
