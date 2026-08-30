@@ -6,6 +6,6 @@
 # means. Dependabot covers pip weekly, so upgrades arrive as a reviewable PR instead
 # of as a surprise on an unrelated branch.
 -r requirements.txt
-ruff==0.16.3
+ruff==0.16.4
 pytest==9.1.1
 pymarkdownlnt==0.9.39
